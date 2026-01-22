@@ -1,11 +1,15 @@
 # STS Stat Viewer
 
-A desktop application for analyzing your **Slay the Spire** run statistics with beautiful, interactive visualizations.
+A desktop application for analyzing your **Slay the Spire** run statistics.
 
 ![Tauri](https://img.shields.io/badge/Tauri-2.0-blue?logo=tauri)
 ![Svelte](https://img.shields.io/badge/Svelte-5-orange?logo=svelte)
 ![Rust](https://img.shields.io/badge/Rust-Backend-red?logo=rust)
 ![License](https://img.shields.io/badge/License-MIT-green)
+
+> ⚠️ **Early Development**: This project is still in early development. Features may change, and bugs are expected. Contributions are greatly appreciated!
+>
+> **Found an issue?** Please report it via [GitHub Issues](../../issues) or email [kai.niermann@gmail.com](mailto:kai.niermann@gmail.com).
 
 ## Features
 
