@@ -79,8 +79,11 @@ pub async fn get_character_runs(
 ) -> Result<Json<Vec<RunMetrics>>, (StatusCode, Json<ApiError>)> {
     // Validate character name
     let valid_chars: Vec<&str> = Character::all().iter().map(|c| c.dir_name()).collect();
-    
-    if !valid_chars.iter().any(|c| c.eq_ignore_ascii_case(&character)) {
+
+    if !valid_chars
+        .iter()
+        .any(|c| c.eq_ignore_ascii_case(&character))
+    {
         return Err((
             StatusCode::NOT_FOUND,
             Json(ApiError::with_details(

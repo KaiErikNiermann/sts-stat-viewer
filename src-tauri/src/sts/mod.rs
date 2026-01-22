@@ -75,7 +75,7 @@ pub struct RunMetrics {
     pub victory: bool,
     pub score: i32,
     pub ascension_level: i32,
-    
+
     // Deck composition
     pub deck_size: i32,
     pub attack_count: i32,
@@ -83,7 +83,7 @@ pub struct RunMetrics {
     pub power_count: i32,
     pub upgraded_cards: i32,
     pub cards_removed: i32,
-    
+
     // Progression
     pub relic_count: i32,
     pub relics: Vec<String>,
@@ -95,11 +95,11 @@ pub struct RunMetrics {
     pub shops_visited: i32,
     pub cards_purchased: i32,
     pub potions_used: i32,
-    
+
     // Combat stats
     pub total_damage_taken: i32,
     pub max_hp_at_end: i32,
-    
+
     // Death info
     pub killed_by: Option<String>,
 }
@@ -169,9 +169,9 @@ where
     D: serde::Deserializer<'de>,
 {
     use serde::de::Error;
-    
+
     let value: Option<serde_json::Value> = Option::deserialize(deserializer)?;
-    
+
     match value {
         None => Ok(None),
         Some(serde_json::Value::Number(n)) => {
@@ -191,21 +191,20 @@ where
 fn get_default_runs_path() -> Option<PathBuf> {
     // Linux Steam path
     if let Some(home) = dirs::home_dir() {
-        let linux_path = home
-            .join(".local/share/Steam/steamapps/common/SlayTheSpire/runs");
+        let linux_path = home.join(".local/share/Steam/steamapps/common/SlayTheSpire/runs");
         if linux_path.exists() {
             return Some(linux_path);
         }
 
         // Windows path
-        let windows_path = home
-            .join("AppData/Local/Steam/steamapps/common/SlayTheSpire/runs");
+        let windows_path = home.join("AppData/Local/Steam/steamapps/common/SlayTheSpire/runs");
         if windows_path.exists() {
             return Some(windows_path);
         }
 
         // Alternative Windows path
-        let windows_alt = PathBuf::from("C:/Program Files (x86)/Steam/steamapps/common/SlayTheSpire/runs");
+        let windows_alt =
+            PathBuf::from("C:/Program Files (x86)/Steam/steamapps/common/SlayTheSpire/runs");
         if windows_alt.exists() {
             return Some(windows_alt);
         }
@@ -224,7 +223,7 @@ pub fn get_runs_path() -> Option<PathBuf> {
         // Custom path set but doesn't exist - still return it so caller can report error
         eprintln!("Custom runs path does not exist: {:?}", custom);
     }
-    
+
     // Fall back to auto-detection
     get_default_runs_path()
 }
@@ -235,7 +234,11 @@ pub fn get_runs_path_info() -> (Option<PathBuf>, bool, Option<PathBuf>) {
     let auto_detected = get_default_runs_path();
     let is_custom = custom.is_some();
     let current = if let Some(ref c) = custom {
-        if c.exists() { custom.clone() } else { None }
+        if c.exists() {
+            custom.clone()
+        } else {
+            None
+        }
     } else {
         auto_detected.clone()
     };
@@ -244,19 +247,66 @@ pub fn get_runs_path_info() -> (Option<PathBuf>, bool, Option<PathBuf>) {
 
 /// Keywords for categorizing attack cards
 const ATTACK_KEYWORDS: &[&str] = &[
-    "strike", "bash", "anger", "cleave", "carnage", "eruption", "flying",
-    "tantrum", "ragnarok", "conclude", "claw", "beam", "core", "doom",
-    "electro", "ftl", "hyperbeam", "meteor", "rip", "sunder", "bludgeon",
-    "sword", "shiv", "dagger", "slice", "neutralize", "riddle", "skewer",
-    "grand finale", "glass knife", "backstab", "predator", "all-out",
-    "ball lightning", "cold snap", "compile", "barrage", "blizzard",
+    "strike",
+    "bash",
+    "anger",
+    "cleave",
+    "carnage",
+    "eruption",
+    "flying",
+    "tantrum",
+    "ragnarok",
+    "conclude",
+    "claw",
+    "beam",
+    "core",
+    "doom",
+    "electro",
+    "ftl",
+    "hyperbeam",
+    "meteor",
+    "rip",
+    "sunder",
+    "bludgeon",
+    "sword",
+    "shiv",
+    "dagger",
+    "slice",
+    "neutralize",
+    "riddle",
+    "skewer",
+    "grand finale",
+    "glass knife",
+    "backstab",
+    "predator",
+    "all-out",
+    "ball lightning",
+    "cold snap",
+    "compile",
+    "barrage",
+    "blizzard",
 ];
 
 /// Keywords for categorizing skill cards
 const SKILL_KEYWORDS: &[&str] = &[
-    "defend", "armament", "shrug", "true grit", "vigilance", "protect",
-    "survivor", "dodge", "blur", "footwork", "charge", "coolhead",
-    "glacier", "leap", "stack", "turbo", "entrench", "impervious",
+    "defend",
+    "armament",
+    "shrug",
+    "true grit",
+    "vigilance",
+    "protect",
+    "survivor",
+    "dodge",
+    "blur",
+    "footwork",
+    "charge",
+    "coolhead",
+    "glacier",
+    "leap",
+    "stack",
+    "turbo",
+    "entrench",
+    "impervious",
 ];
 
 /// Parse a single run file
@@ -271,15 +321,21 @@ fn parse_run_file(path: &std::path::Path, character: &str) -> Option<RunMetrics>
     let damage_taken = raw.damage_taken.unwrap_or_default();
 
     // Count card types
-    let attack_count = master_deck.iter().filter(|c| {
-        let lower = c.to_lowercase();
-        ATTACK_KEYWORDS.iter().any(|k| lower.contains(k))
-    }).count() as i32;
+    let attack_count = master_deck
+        .iter()
+        .filter(|c| {
+            let lower = c.to_lowercase();
+            ATTACK_KEYWORDS.iter().any(|k| lower.contains(k))
+        })
+        .count() as i32;
 
-    let skill_count = master_deck.iter().filter(|c| {
-        let lower = c.to_lowercase();
-        SKILL_KEYWORDS.iter().any(|k| lower.contains(k))
-    }).count() as i32;
+    let skill_count = master_deck
+        .iter()
+        .filter(|c| {
+            let lower = c.to_lowercase();
+            SKILL_KEYWORDS.iter().any(|k| lower.contains(k))
+        })
+        .count() as i32;
 
     let power_count = master_deck.len() as i32 - attack_count - skill_count;
 
@@ -304,16 +360,35 @@ fn parse_run_file(path: &std::path::Path, character: &str) -> Option<RunMetrics>
         relic_count: relics.len() as i32,
         relics: relics,
         master_deck: master_deck.clone(),
-        elites_killed: path_per_floor.iter().filter(|p| p.as_deref() == Some("E")).count() as i32,
-        bosses_killed: path_per_floor.iter().filter(|p| p.as_deref() == Some("BOSS")).count() as i32,
-        campfires_rested: campfire_choices.iter().filter(|c| c.key.as_deref() == Some("REST")).count() as i32,
-        campfires_upgraded: campfire_choices.iter().filter(|c| c.key.as_deref() == Some("SMITH")).count() as i32,
-        shops_visited: path_per_floor.iter().filter(|p| p.as_deref() == Some("$")).count() as i32,
+        elites_killed: path_per_floor
+            .iter()
+            .filter(|p| p.as_deref() == Some("E"))
+            .count() as i32,
+        bosses_killed: path_per_floor
+            .iter()
+            .filter(|p| p.as_deref() == Some("BOSS"))
+            .count() as i32,
+        campfires_rested: campfire_choices
+            .iter()
+            .filter(|c| c.key.as_deref() == Some("REST"))
+            .count() as i32,
+        campfires_upgraded: campfire_choices
+            .iter()
+            .filter(|c| c.key.as_deref() == Some("SMITH"))
+            .count() as i32,
+        shops_visited: path_per_floor
+            .iter()
+            .filter(|p| p.as_deref() == Some("$"))
+            .count() as i32,
         cards_purchased: raw.items_purchased.map(|v| v.len()).unwrap_or(0) as i32,
         potions_used: raw.potions_floor_usage.map(|v| v.len()).unwrap_or(0) as i32,
         total_damage_taken: damage_taken.iter().filter_map(|d| d.damage).sum(),
-        max_hp_at_end: raw.max_hp_per_floor
-            .and_then(|v| v.last().and_then(|val| val.as_f64().or_else(|| val.as_i64().map(|i| i as f64))))
+        max_hp_at_end: raw
+            .max_hp_per_floor
+            .and_then(|v| {
+                v.last()
+                    .and_then(|val| val.as_f64().or_else(|| val.as_i64().map(|i| i as f64)))
+            })
             .map(|f| f as i32)
             .unwrap_or(72),
         killed_by: raw.killed_by,
@@ -355,7 +430,10 @@ pub fn calculate_character_stats(runs: &[RunMetrics]) -> Vec<CharacterStats> {
     let mut stats_map: HashMap<String, Vec<&RunMetrics>> = HashMap::new();
 
     for run in runs {
-        stats_map.entry(run.character.clone()).or_default().push(run);
+        stats_map
+            .entry(run.character.clone())
+            .or_default()
+            .push(run);
     }
 
     let mut stats = Vec::new();
@@ -375,12 +453,32 @@ pub fn calculate_character_stats(runs: &[RunMetrics]) -> Vec<CharacterStats> {
                 display_name: character.display_name().to_string(),
                 total_runs: total,
                 wins,
-                win_rate: if total > 0 { wins as f64 / total as f64 } else { 0.0 },
-                avg_score: if total > 0 { scores.iter().sum::<i32>() as f64 / total as f64 } else { 0.0 },
-                avg_floor: if total > 0 { floors.iter().sum::<i32>() as f64 / total as f64 } else { 0.0 },
+                win_rate: if total > 0 {
+                    wins as f64 / total as f64
+                } else {
+                    0.0
+                },
+                avg_score: if total > 0 {
+                    scores.iter().sum::<i32>() as f64 / total as f64
+                } else {
+                    0.0
+                },
+                avg_floor: if total > 0 {
+                    floors.iter().sum::<i32>() as f64 / total as f64
+                } else {
+                    0.0
+                },
                 max_floor: floors.into_iter().max().unwrap_or(0),
-                avg_deck_size: if total > 0 { deck_sizes.iter().sum::<i32>() as f64 / total as f64 } else { 0.0 },
-                avg_relics: if total > 0 { relics.iter().sum::<i32>() as f64 / total as f64 } else { 0.0 },
+                avg_deck_size: if total > 0 {
+                    deck_sizes.iter().sum::<i32>() as f64 / total as f64
+                } else {
+                    0.0
+                },
+                avg_relics: if total > 0 {
+                    relics.iter().sum::<i32>() as f64 / total as f64
+                } else {
+                    0.0
+                },
             });
         }
     }
@@ -392,7 +490,7 @@ pub fn calculate_character_stats(runs: &[RunMetrics]) -> Vec<CharacterStats> {
 pub fn get_export_data() -> ExportData {
     let runs = load_all_runs();
     let character_stats = calculate_character_stats(&runs);
-    
+
     ExportData {
         runs,
         character_stats,

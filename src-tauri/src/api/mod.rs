@@ -11,10 +11,12 @@ use tower_http::cors::{Any, CorsLayer};
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
-use handlers::{greet, greet_by_path, health_check};
-use sts_handlers::{get_character_runs, get_character_stats, get_characters, get_export, get_runs, get_stats};
-use types::{ApiError, GreetRequest, GreetResponse, HealthResponse, HealthStatus};
 use crate::sts::{CharacterStats, ExportData, RunMetrics};
+use handlers::{greet, greet_by_path, health_check};
+use sts_handlers::{
+    get_character_runs, get_character_stats, get_characters, get_export, get_runs, get_stats,
+};
+use types::{ApiError, GreetRequest, GreetResponse, HealthResponse, HealthStatus};
 
 /// OpenAPI documentation structure
 #[derive(OpenApi)]
@@ -53,7 +55,7 @@ pub struct ApiDoc;
 /// Create the API router with all routes and OpenAPI documentation
 pub fn create_router() -> Router {
     use axum::routing::post;
-    
+
     let cors = CorsLayer::new()
         .allow_origin(Any)
         .allow_methods(Any)
@@ -80,11 +82,17 @@ pub fn create_router() -> Router {
 pub async fn start_server(port: u16) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let router = create_router();
     let listener = tokio::net::TcpListener::bind(format!("127.0.0.1:{}", port)).await?;
-    
+
     println!("🚀 API server running at http://127.0.0.1:{}", port);
-    println!("📚 Swagger UI available at http://127.0.0.1:{}/swagger-ui/", port);
-    println!("📄 OpenAPI spec at http://127.0.0.1:{}/api-docs/openapi.json", port);
-    
+    println!(
+        "📚 Swagger UI available at http://127.0.0.1:{}/swagger-ui/",
+        port
+    );
+    println!(
+        "📄 OpenAPI spec at http://127.0.0.1:{}/api-docs/openapi.json",
+        port
+    );
+
     axum::serve(listener, router).await?;
     Ok(())
 }

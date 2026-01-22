@@ -9,19 +9,19 @@ A desktop application for analyzing your **Slay the Spire** run statistics with 
 
 ## Features
 
-### 📊 Rich Visualizations
+### Rich Visualizations
 - **12 chart types**: Scatter plots, histograms, box plots, density plots, regression analysis, heatmaps, waffle charts, and more
 - **Drag-and-drop** graph arrangement
 - **Customizable graphs** - add, edit, and remove charts
 - Built with [Observable Plot](https://observablehq.com/plot/) and D3.js
 
-### 🎮 Run Analysis
+### Run Analysis
 - **Character statistics**: Win rate, average floor, score distribution per character
 - **Run metrics**: Deck composition, relics, damage taken, shops visited, and more
 - **Filtering**: View all runs or filter by character
 - **Relic & card tables** with frequency analysis
 
-### ⚙️ Flexible Configuration
+### Flexible Configuration
 - **Auto-detects** Slay the Spire run data on Windows and Linux
 - **Manual path override** for custom installations
 - **Persists settings** across app reloads
@@ -29,7 +29,10 @@ A desktop application for analyzing your **Slay the Spire** run statistics with 
 
 ## Screenshots
 
-*(Add screenshots here)*
+<p align="center">
+  <img src="static/Screenshot_20260122_165031.png" width="48%" alt="Overview Dashboard" />
+  <img src="static/Screenshot_20260122_165047.png" width="48%" alt="Character View" />
+</p>
 
 ## Installation
 

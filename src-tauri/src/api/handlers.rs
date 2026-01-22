@@ -2,11 +2,7 @@
 //!
 //! These handlers implement the OpenAPI-documented endpoints.
 
-use axum::{
-    extract::Path,
-    http::StatusCode,
-    Json,
-};
+use axum::{extract::Path, http::StatusCode, Json};
 use chrono::Utc;
 
 use super::types::{ApiError, GreetRequest, GreetResponse, HealthResponse, HealthStatus};
@@ -132,7 +128,7 @@ mod tests {
         };
         let result = greet(Json(request)).await;
         assert!(result.is_ok());
-        
+
         let response = result.unwrap();
         assert!(response.message.contains("World"));
     }
@@ -144,7 +140,7 @@ mod tests {
         };
         let result = greet(Json(request)).await;
         assert!(result.is_err());
-        
+
         let (status, error) = result.unwrap_err();
         assert_eq!(status, StatusCode::BAD_REQUEST);
         assert_eq!(error.code, "VALIDATION_ERROR");
@@ -154,7 +150,7 @@ mod tests {
     async fn test_greet_by_path_valid() {
         let result = greet_by_path(Path("Rust".to_string())).await;
         assert!(result.is_ok());
-        
+
         let response = result.unwrap();
         assert!(response.message.contains("Rust"));
     }

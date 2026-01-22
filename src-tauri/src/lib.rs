@@ -9,9 +9,9 @@
 pub mod api;
 pub mod sts;
 
+use serde::Serialize;
 use std::path::PathBuf;
 use std::thread;
-use serde::Serialize;
 
 /// Tauri command to greet a user (direct IPC)
 #[tauri::command]
@@ -69,7 +69,7 @@ fn get_runs_path_info() -> RunsPathInfo {
     let (current, is_custom, auto_detected) = sts::get_runs_path_info();
     let current_path = current.as_ref().map(|p| p.to_string_lossy().to_string());
     let path_exists = current.as_ref().map(|p| p.exists()).unwrap_or(false);
-    
+
     RunsPathInfo {
         current_path,
         is_custom,
@@ -82,16 +82,16 @@ fn get_runs_path_info() -> RunsPathInfo {
 #[tauri::command]
 fn set_runs_path(path: String) -> Result<RunsPathInfo, String> {
     let path_buf = PathBuf::from(&path);
-    
+
     // Validate the path exists
     if !path_buf.exists() {
         return Err(format!("Path does not exist: {}", path));
     }
-    
+
     if !path_buf.is_dir() {
         return Err(format!("Path is not a directory: {}", path));
     }
-    
+
     sts::set_custom_runs_path(Some(path_buf));
     Ok(get_runs_path_info())
 }
@@ -162,4 +162,3 @@ mod tests {
         assert!(spec.contains("3.1"));
     }
 }
-
