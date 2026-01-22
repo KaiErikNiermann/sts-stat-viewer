@@ -24,7 +24,7 @@
     "@tauri-apps/plugin-opener": "^2",
     "d3": "^7.9.0",
     "effect": "^3.11.9",
-    "openapi-fetch": "^0.13.5",
+    "openapi-fetch": "^0.15.0",
     "svelte-dnd-action": "^0.9.69",
     "ts-pattern": "^5.9.0"
   },
