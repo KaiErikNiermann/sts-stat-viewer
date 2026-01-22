@@ -1,216 +1,192 @@
-# Tauri Hello World - OpenAPI + Effect-TS
+# STS Stat Viewer
 
-A modern Tauri desktop application demonstrating:
-- **Rust backend** with automatic OpenAPI documentation using [utoipa](https://github.com/juhaku/utoipa)
-- **Svelte 5 frontend** with strict TypeScript
-- **Type-safe API client** using [openapi-typescript](https://openapi-ts.dev/) + [openapi-fetch](https://openapi-ts.dev/openapi-fetch/)
-- **Functional error handling** with [Effect-TS](https://effect.website/)
+A desktop application for analyzing your **Slay the Spire** run statistics with beautiful, interactive visualizations.
+
+![Tauri](https://img.shields.io/badge/Tauri-2.0-blue?logo=tauri)
+![Svelte](https://img.shields.io/badge/Svelte-5-orange?logo=svelte)
+![Rust](https://img.shields.io/badge/Rust-Backend-red?logo=rust)
+![License](https://img.shields.io/badge/License-MIT-green)
+
+## Features
+
+### 📊 Rich Visualizations
+- **12 chart types**: Scatter plots, histograms, box plots, density plots, regression analysis, heatmaps, waffle charts, and more
+- **Drag-and-drop** graph arrangement
+- **Customizable graphs** - add, edit, and remove charts
+- Built with [Observable Plot](https://observablehq.com/plot/) and D3.js
+
+### 🎮 Run Analysis
+- **Character statistics**: Win rate, average floor, score distribution per character
+- **Run metrics**: Deck composition, relics, damage taken, shops visited, and more
+- **Filtering**: View all runs or filter by character
+- **Relic & card tables** with frequency analysis
+
+### ⚙️ Flexible Configuration
+- **Auto-detects** Slay the Spire run data on Windows and Linux
+- **Manual path override** for custom installations
+- **Persists settings** across app reloads
+- **Dark/light theme** support
+
+## Screenshots
+
+*(Add screenshots here)*
+
+## Installation
+
+### Download Release
+Download the latest release for your platform from [Releases](../../releases):
+- **Linux**: `.AppImage`, `.deb`, or `.rpm`
+- **Windows**: `.msi` or `.exe` installer
+
+### Build from Source
+
+#### Prerequisites
+- Node.js 20+
+- Rust 1.75+
+- pnpm
+
+#### Steps
+```bash
+# Clone repository
+git clone https://github.com/your-username/sts-stat-viewer.git
+cd sts-stat-viewer
+
+# Install dependencies
+pnpm install
+
+# Run in development mode
+pnpm tauri dev
+
+# Build for production
+pnpm tauri build
+```
 
 ## Project Structure
 
 ```
-tauri-hello-world/
-├── openapi/                    # OpenAPI specifications
-│   └── api.yaml               # Main API spec (source of truth)
-├── src/                        # Frontend source
+sts-stat-viewer/
+├── .github/workflows/      # CI/CD
+│   ├── test.yml           # Testing (Linux + Windows)
+│   └── release.yml        # Build & release
+├── openapi/               # API specification
+│   └── api.yaml           # OpenAPI 3.1 spec
+├── src/                   # Frontend (Svelte 5)
 │   ├── lib/
-│   │   └── api/               # API client with Effect-TS
-│   │       ├── client.ts      # Type-safe client wrapper
-│   │       ├── client.test.ts # Client tests
-│   │       ├── index.ts       # Module exports
-│   │       └── schema.d.ts    # Generated types (from OpenAPI)
-│   └── routes/
-│       └── +page.svelte       # Main page component
-├── src-tauri/                  # Rust backend
+│   │   ├── api/          # Type-safe API client
+│   │   ├── components/   # UI components (modals, cards)
+│   │   ├── plots/        # Visualization components
+│   │   └── stores/       # Svelte stores (graphs, settings, theme)
+│   └── routes/           # SvelteKit routes
+├── src-tauri/            # Backend (Rust)
 │   └── src/
-│       ├── api/               # REST API implementation
-│       │   ├── mod.rs         # Router & OpenAPI setup
-│       │   ├── handlers.rs    # Request handlers
-│       │   └── types.rs       # API types with utoipa
-│       └── lib.rs             # Tauri app entry
-└── package.json
+│       ├── api/          # REST API (axum)
+│       ├── sts/          # STS data parsing
+│       └── lib.rs        # Tauri commands
+└── tests/                # E2E tests (Playwright)
 ```
 
-## Features
+## Development
 
-### Backend (Rust)
-- **Axum** web framework for REST API
-- **utoipa** for automatic OpenAPI 3.1 documentation generation
-- **Swagger UI** available at `/swagger-ui/`
-- Type-safe request/response handling
-- Comprehensive tests
+### Commands
 
-### Frontend (TypeScript/Svelte)
-- **Svelte 5** with runes for state management
-- **Strict TypeScript** configuration
-- **openapi-typescript** for type generation from OpenAPI spec
-- **openapi-fetch** for type-safe HTTP requests
+| Command | Description |
+|---------|-------------|
+| `pnpm dev` | Start Vite dev server |
+| `pnpm tauri dev` | Start Tauri app in dev mode |
+| `pnpm build` | Build frontend |
+| `pnpm tauri build` | Build production app |
+| `pnpm test` | Run unit tests (Vitest) |
+| `pnpm test:e2e` | Run E2E tests (Playwright) |
+| `pnpm check` | TypeScript type checking |
+| `pnpm generate:api` | Regenerate API types from OpenAPI |
+
+### API Endpoints
+
+The app runs a local REST API at `http://localhost:3030`:
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /api/health` | Health check |
+| `GET /api/runs` | Get all runs (with filtering) |
+| `GET /api/runs/{character}` | Get character runs |
+| `GET /api/stats` | Character statistics |
+| `GET /api/export` | Export all data |
+| `GET /swagger-ui/` | Interactive API docs |
+
+### Visualization Components
+
+| Component | Description |
+|-----------|-------------|
+| `ScatterPlot` | X-Y scatter with optional coloring |
+| `Histogram` | Distribution with configurable bins |
+| `BoxPlot` | Statistical box-and-whisker plots |
+| `BarChart` | Categorical bar charts |
+| `LineChart` | Trend lines |
+| `DensityPlot` | 2D density heatmaps |
+| `RegressionPlot` | Linear regression with confidence |
+| `Heatmap` | Field correlation matrix |
+| `WaffleChart` | Proportional area charts |
+| `DotPlot` | Cleveland dot plots |
+| `StackedArea` | Stacked area over categories |
+| `ItemTable` | Sortable relic/card tables |
+
+## Tech Stack
+
+### Frontend
+- **Svelte 5** with runes
+- **SvelteKit** with static adapter
+- **TypeScript** (strict mode)
+- **Tailwind CSS** for styling
+- **Observable Plot** + D3 for visualizations
 - **Effect-TS** for functional error handling
-- Both REST API and Tauri IPC communication
+- **svelte-dnd-action** for drag-and-drop
 
-## Getting Started
+### Backend
+- **Rust** with Tauri 2.0
+- **Axum** web framework
+- **utoipa** for OpenAPI generation
+- **Swagger UI** for API documentation
+- **serde** for JSON serialization
 
-### Prerequisites
-- Node.js 20+
-- Rust 1.75+
-- pnpm (or npm/yarn)
-
-### Installation
-
-```bash
-# Navigate to project
-cd tauri-hello-world
-
-# Install frontend dependencies
-pnpm install
-
-# Generate API types from OpenAPI spec
-pnpm generate:api
-```
-
-### Development
-
-```bash
-# Run the Tauri development server
-pnpm tauri dev
-```
-
-This starts:
-- Frontend dev server (Vite)
-- Rust backend with API server on port 3030
-- Tauri desktop window
-
-### Access Points
-
-| URL | Description |
-|-----|-------------|
-| `http://localhost:3030/api/health` | Health check endpoint |
-| `http://localhost:3030/api/greet` | POST greeting endpoint |
-| `http://localhost:3030/api/greet/{name}` | GET greeting endpoint |
-| `http://localhost:3030/swagger-ui/` | Swagger UI documentation |
-| `http://localhost:3030/api-docs/openapi.json` | OpenAPI JSON spec |
-
-## API Documentation
-
-The API is documented using OpenAPI 3.1. The spec is:
-1. **Defined in Rust** using utoipa macros
-2. **Auto-generated** at runtime
-3. **Available** at `/api-docs/openapi.json`
-
-### Endpoints
-
-#### Health Check
-```
-GET /api/health
-Response: { status: "healthy", timestamp: "...", version: "0.1.0" }
-```
-
-#### Greet (POST)
-```
-POST /api/greet
-Body: { "name": "World" }
-Response: { "message": "Hello, World! ...", "timestamp": "..." }
-```
-
-#### Greet (GET)
-```
-GET /api/greet/{name}
-Response: { "message": "Hello, {name}! ...", "timestamp": "..." }
-```
-
-## Type Generation
-
-### Generate Types from OpenAPI
-
-```bash
-# Generate TypeScript types from the OpenAPI spec
-pnpm generate:api
-```
-
-This reads `openapi/api.yaml` and generates `src/lib/api/schema.d.ts`.
-
-### Workflow
-
-1. **Modify Rust types** in `src-tauri/src/api/types.rs`
-2. **Update handlers** in `src-tauri/src/api/handlers.rs`
-3. **Run the app** to generate the live OpenAPI spec
-4. **Export spec** (optional): Save from `/api-docs/openapi.json`
-5. **Regenerate types**: `pnpm generate:api`
-
-## Effect-TS Integration
-
-The API client uses Effect-TS for type-safe, composable error handling:
-
-```typescript
-import { effectApi, runEffect, matchApiError } from '$lib/api';
-import { Either } from 'effect';
-
-// Make API call
-const result = await runEffect(effectApi.greet({ name: 'World' }));
-
-// Handle result
-if (Either.isRight(result)) {
-  console.log(result.right.message);
-} else {
-  // Type-safe error handling
-  const message = matchApiError(result.left, {
-    onNetworkError: (e) => `Network failed: ${e.message}`,
-    onApiRequestError: (e) => `API error: ${e.error.code}`,
-    onUnexpectedError: (e) => `Unexpected: ${e.message}`,
-  });
-}
-```
-
-## Testing
-
-### Frontend Tests
-```bash
-# Run tests
-pnpm test
-
-# Watch mode
-pnpm test:watch
-
-# Coverage
-pnpm test:coverage
-```
-
-### Backend Tests
-```bash
-cd src-tauri
-cargo test
-```
-
-## Build for Production
-
-```bash
-# Build the application
-pnpm tauri build
-```
+### Testing
+- **Vitest** for unit tests
+- **Playwright** for E2E tests
+- **GitHub Actions** for CI/CD
 
 ## Configuration
 
-### TypeScript (tsconfig.json)
-- `strict: true`
-- `noUncheckedIndexedAccess: true`
-- `exactOptionalPropertyTypes: true`
-- Full strict mode enabled
+### Custom Run Data Path
 
-### Rust Dependencies
-- `utoipa` v5 - OpenAPI generation
-- `axum` v0.8 - Web framework
-- `tokio` - Async runtime
-- `serde` - Serialization
+If the app can't auto-detect your Slay the Spire installation:
 
-### Frontend Dependencies
-- `effect` - Functional programming
-- `openapi-fetch` - Type-safe fetch client
-- `openapi-typescript` - Type generation
+1. Click the ⚙️ settings icon in the header
+2. Enter the path to your `runs` folder
+3. Click **Save**
 
-## Recommended IDE Setup
+The path is persisted in localStorage and restored on app restart.
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer).
+### Auto-detected Paths
+
+| Platform | Path |
+|----------|------|
+| Linux (Steam) | `~/.local/share/Steam/steamapps/common/SlayTheSpire/runs` |
+| Windows | `%LOCALAPPDATA%/Steam/steamapps/common/SlayTheSpire/runs` |
+| Windows (alt) | `C:/Program Files (x86)/Steam/steamapps/common/SlayTheSpire/runs` |
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests: `pnpm test && cd src-tauri && cargo test`
+5. Submit a pull request
 
 ## License
 
 MIT
+
+## Acknowledgments
+
+- [Slay the Spire](https://www.megacrit.com/) by Mega Crit
+- [Tauri](https://tauri.app/) for the app framework
+- [Observable Plot](https://observablehq.com/plot/) for visualizations

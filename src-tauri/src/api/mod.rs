@@ -106,11 +106,11 @@ mod tests {
     #[test]
     fn test_openapi_generation() {
         let json = get_openapi_json();
-        assert!(json.contains("Tauri Hello World API"));
+        assert!(json.contains("STS Stat Viewer API"));
         assert!(json.contains("/api/health"));
-        assert!(json.contains("/api/greet"));
+        assert!(json.contains("/api/runs"));
         assert!(json.contains("HealthResponse"));
-        assert!(json.contains("GreetRequest"));
+        assert!(json.contains("RunMetrics"));
     }
 
     #[test]
