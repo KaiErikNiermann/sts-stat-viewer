@@ -1,0 +1,329 @@
+openapi: "3.1.0"
+info:
+  title: STS Stat Viewer API
+  description: API for Slay the Spire run statistics and analysis
+  version: "1.0.0"
+  contact:
+    name: API Support
+
+servers:
+  - url: http://127.0.0.1:3030
+    description: Local development server
+
+tags:
+  - name: health
+    description: Health check endpoints
+  - name: sts
+    description: Slay the Spire data endpoints
+
+paths:
+  /api/health:
+    get:
+      tags:
+        - health
+      summary: Health check
+      operationId: healthCheck
+      responses:
+        "200":
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /api/characters:
+    get:
+      tags:
+        - sts
+      summary: Get available characters
+      operationId: getCharacters
+      responses:
+        "200":
+          description: List of characters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Character"
+
+  /api/runs:
+    get:
+      tags:
+        - sts
+      summary: Get all runs with optional filtering
+      operationId: getRuns
+      parameters:
+        - name: character
+          in: query
+          schema:
+            type: string
+          description: Filter by character name
+        - name: victories_only
+          in: query
+          schema:
+            type: boolean
+          description: Only return victories
+        - name: min_ascension
+          in: query
+          schema:
+            type: integer
+          description: Minimum ascension level
+      responses:
+        "200":
+          description: List of runs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RunMetrics"
+
+  /api/runs/{character}:
+    get:
+      tags:
+        - sts
+      summary: Get runs for a specific character
+      operationId: getCharacterRuns
+      parameters:
+        - name: character
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Character name (IRONCLAD, THE_SILENT, DEFECT, WATCHER)
+      responses:
+        "200":
+          description: Character runs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RunMetrics"
+        "404":
+          description: Character not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /api/stats:
+    get:
+      tags:
+        - sts
+      summary: Get aggregated stats for all characters
+      operationId: getStats
+      responses:
+        "200":
+          description: Character statistics
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CharacterStats"
+
+  /api/stats/{character}:
+    get:
+      tags:
+        - sts
+      summary: Get stats for a specific character
+      operationId: getCharacterStats
+      parameters:
+        - name: character
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Character statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CharacterStats"
+        "404":
+          description: Character not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /api/export:
+    get:
+      tags:
+        - sts
+      summary: Get complete export data
+      operationId: getExport
+      responses:
+        "200":
+          description: Complete export data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExportData"
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+        version:
+          type: string
+
+    Character:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          description: Character identifier (e.g., IRONCLAD)
+        name:
+          type: string
+          description: Display name (e.g., Ironclad)
+
+    RunMetrics:
+      type: object
+      required:
+        - play_id
+        - character
+        - floor_reached
+        - victory
+        - score
+      properties:
+        play_id:
+          type: string
+        character:
+          type: string
+        floor_reached:
+          type: integer
+        victory:
+          type: boolean
+        score:
+          type: integer
+        ascension_level:
+          type: integer
+        deck_size:
+          type: integer
+        attack_count:
+          type: integer
+        skill_count:
+          type: integer
+        power_count:
+          type: integer
+        upgraded_cards:
+          type: integer
+        cards_removed:
+          type: integer
+        relic_count:
+          type: integer
+        relics:
+          type: array
+          items:
+            type: string
+          description: List of relic names obtained during the run
+        master_deck:
+          type: array
+          items:
+            type: string
+          description: List of card names in the final deck
+        elites_killed:
+          type: integer
+        bosses_killed:
+          type: integer
+        campfires_rested:
+          type: integer
+        campfires_upgraded:
+          type: integer
+        shops_visited:
+          type: integer
+        cards_purchased:
+          type: integer
+        potions_used:
+          type: integer
+        total_damage_taken:
+          type: integer
+        max_hp_at_end:
+          type: integer
+        killed_by:
+          type: string
+          nullable: true
+
+    CharacterStats:
+      type: object
+      required:
+        - character
+        - display_name
+        - total_runs
+        - wins
+        - win_rate
+      properties:
+        character:
+          type: string
+        display_name:
+          type: string
+        total_runs:
+          type: integer
+        wins:
+          type: integer
+        win_rate:
+          type: number
+          format: double
+        avg_score:
+          type: number
+          format: double
+        avg_floor:
+          type: number
+          format: double
+        max_floor:
+          type: integer
+        avg_deck_size:
+          type: number
+          format: double
+        avg_relics:
+          type: number
+          format: double
+
+    ExportData:
+      type: object
+      required:
+        - runs
+        - character_stats
+        - export_timestamp
+      properties:
+        runs:
+          type: array
+          items:
+            $ref: "#/components/schemas/RunMetrics"
+        character_stats:
+          type: array
+          items:
+            $ref: "#/components/schemas/CharacterStats"
+        export_timestamp:
+          type: integer
+          format: int64
+
+    ApiError:
+      type: object
+      required:
+        - error
+        - code
+      properties:
+        error:
+          type: string
+        code:
+          type: string
+        details:
+          type: string
