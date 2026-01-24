@@ -105,7 +105,7 @@
   {#if title}
     <h3 class="text-lg font-semibold mb-2 plot-title">{title}</h3>
   {/if}
-  <div bind:this={container} class="plot-container"></div>
+  <div bind:this={container} class="plot-container flex justify-center"></div>
 </div>
 
 <style>

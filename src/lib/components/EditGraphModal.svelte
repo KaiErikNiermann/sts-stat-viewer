@@ -23,6 +23,7 @@
   let showConfidence = $state(untrack(() => config.showConfidence ?? true));
   let bandwidth = $state(untrack(() => config.bandwidth ?? 20));
   let showBossFloors = $state(untrack(() => config.showBossFloors ?? false));
+  let showNormalCurve = $state(untrack(() => config.showNormalCurve ?? false));
 
   // Determine which options are available based on graph type
   const showXYFields = ['scatter', 'regression', 'density', 'boxplot'].includes(graphType);
@@ -31,6 +32,7 @@
   const showGroupByCharacter = graphType === 'survival';
   const showConfidenceOption = graphType === 'regression';
   const showBandwidthOption = graphType === 'density';
+  const showNormalCurveOption = graphType === 'histogram';
   
   // Boss floor option available when floor_reached could be on an axis
   const canShowBossFloors = !['winrate-waffle', 'boxplot'].includes(graphType);
@@ -78,6 +80,9 @@
     }
     if (canShowBossFloors && hasFloorOnAxis) {
       changes.showBossFloors = showBossFloors;
+    }
+    if (showNormalCurveOption) {
+      changes.showNormalCurve = showNormalCurve;
     }
 
     onSave(changes);
@@ -306,6 +311,21 @@
           />
           <label for="edit-boss-floors" class="text-sm" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
             Show boss floor markers
+          </label>
+        </div>
+      {/if}
+
+      <!-- Normal curve (histogram) -->
+      {#if showNormalCurveOption}
+        <div class="flex items-center gap-2">
+          <input
+            id="edit-normal-curve"
+            type="checkbox"
+            bind:checked={showNormalCurve}
+            class="w-4 h-4 rounded"
+          />
+          <label for="edit-normal-curve" class="text-sm" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
+            Show normal distribution curve
           </label>
         </div>
       {/if}

@@ -65,6 +65,8 @@ export interface GraphConfig {
   bandwidth?: number;
   // Show boss floor reference lines when floor is on axis
   showBossFloors?: boolean;
+  // For histograms, show normal distribution curve overlay
+  showNormalCurve?: boolean;
 }
 
 // Default graphs for overview tab

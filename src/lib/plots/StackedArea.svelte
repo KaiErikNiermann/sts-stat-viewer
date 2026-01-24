@@ -97,7 +97,7 @@
       {title}
     </h3>
   {/if}
-  <div bind:this={container}></div>
+  <div bind:this={container} class="flex justify-center"></div>
 </div>
 
 <style>

@@ -241,6 +241,7 @@
       yLabel={config.yLabel}
       bins={config.bins ?? 15}
       showXBossFloors={showXBossFloors}
+      showNormalCurve={config.showNormalCurve ?? false}
     />
   {:else if config.type === 'scatter'}
     <ScatterPlot

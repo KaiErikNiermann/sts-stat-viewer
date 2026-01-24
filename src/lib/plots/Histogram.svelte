@@ -15,6 +15,7 @@
     bins?: number;
     color?: string;
     showXBossFloors?: boolean;
+    showNormalCurve?: boolean;
     options?: PlotOptions;
   }
 
@@ -26,15 +27,54 @@
     bins = 20,
     color = '#3b82f6',
     showXBossFloors = false,
+    showNormalCurve = false,
     options = {} 
   }: Props = $props();
 
   let container: HTMLDivElement;
 
+  // Calculate normal distribution curve points
+  function generateNormalCurve(values: number[], binCount: number) {
+    if (values.length === 0) return [];
+    
+    // Calculate mean and standard deviation
+    const mean = values.reduce((sum, v) => sum + v, 0) / values.length;
+    const variance = values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / values.length;
+    const stdDev = Math.sqrt(variance);
+    
+    // Get the range of the data
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const range = max - min;
+    
+    // Generate points for the normal curve
+    const points = [];
+    const numPoints = 100;
+    
+    for (let i = 0; i <= numPoints; i++) {
+      const x = min + (range * i / numPoints);
+      // Normal distribution formula (probability density function)
+      const exponent = -Math.pow(x - mean, 2) / (2 * Math.pow(stdDev, 2));
+      const y = (1 / (stdDev * Math.sqrt(2 * Math.PI))) * Math.exp(exponent);
+      
+      // Scale y to match the histogram's frequency count
+      // Multiply by total count and bin width to match histogram scale
+      const binWidth = range / binCount;
+      const scaledY = y * values.length * binWidth;
+      
+      points.push({ x, y: scaledY });
+    }
+    
+    return points;
+  }
+
   function renderPlot() {
     if (!container || !data.length) return;
     
     container.innerHTML = '';
+
+    const values = data.map(d => d.value);
+    const normalCurveData = showNormalCurve ? generateNormalCurve(values, bins) : [];
 
     const plot = Plot.plot({
       width: options.width ?? 600,
@@ -62,6 +102,16 @@
           fill: color,
           tip: true,
         }),
+        // Normal distribution curve overlay
+        ...(showNormalCurve ? [
+          Plot.line(normalCurveData, {
+            x: 'x',
+            y: 'y',
+            stroke: $isDarkMode ? '#fbbf24' : '#f59e0b',
+            strokeWidth: 2,
+            curve: 'basis',
+          })
+        ] : []),
         Plot.ruleY([0]),
       ],
     });
@@ -79,6 +129,7 @@
   $effect(() => {
     data;
     bins;
+    showNormalCurve;
     $isDarkMode;
     renderPlot();
   });
@@ -88,7 +139,7 @@
   {#if title}
     <h3 class="text-lg font-semibold mb-2 plot-title">{title}</h3>
   {/if}
-  <div bind:this={container} class="plot-container"></div>
+  <div bind:this={container} class="plot-container flex justify-center"></div>
 </div>
 
 <style>

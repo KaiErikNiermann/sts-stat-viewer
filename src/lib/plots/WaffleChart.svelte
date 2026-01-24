@@ -46,9 +46,9 @@
       width: options.width ?? 350,
       height: options.height ?? 300,
       marginTop: options.marginTop ?? 20,
-      marginRight: options.marginRight ?? 20,
+      marginRight: options.marginRight ?? 40,
       marginBottom: options.marginBottom ?? 60,
-      marginLeft: options.marginLeft ?? 50,
+      marginLeft: options.marginLeft ?? 40,
       style: {
         background: 'transparent',
         color: $isDarkMode ? '#e2e8f0' : '#1e293b',
@@ -99,7 +99,7 @@
       {title}
     </h3>
   {/if}
-  <div bind:this={container}></div>
+  <div bind:this={container} class="flex justify-center"></div>
   <!-- Summary stats below the chart -->
   {#if data.length > 0}
     {@const total = data.reduce((sum, d) => sum + d.value, 0)}
