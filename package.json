@@ -33,7 +33,7 @@
     "ts-pattern": "^5.9.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.49.0",
+    "@playwright/test": "^1.58.1",
     "@sveltejs/adapter-static": "^3.0.6",
     "@sveltejs/kit": "^2.50.0",
     "@sveltejs/vite-plugin-svelte": "^5.0.0",
