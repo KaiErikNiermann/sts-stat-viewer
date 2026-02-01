@@ -1,0 +1,369 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .btn-sm {
+    @apply px-3 py-1.5;
+  }
+
+  .btn-md {
+    @apply px-4 py-2;
+  }
+
+  .btn-primary {
+    @apply bg-blue-600 hover:bg-blue-500 text-white;
+  }
+
+  .btn-danger {
+    @apply bg-red-600 hover:bg-red-500 text-white;
+  }
+
+  .icon-btn {
+    @apply inline-flex items-center justify-center rounded-md transition-colors;
+  }
+
+  .icon-btn-sm {
+    @apply p-1.5;
+  }
+
+  .icon-btn-md {
+    @apply p-2;
+  }
+
+  .form-label {
+    @apply block text-sm font-medium;
+  }
+
+  .form-input {
+    @apply px-3 py-2 rounded-md border text-sm;
+  }
+
+  .form-checkbox {
+    @apply w-4 h-4 rounded;
+  }
+
+  .modal-root {
+    @apply fixed inset-0 z-50 flex items-center justify-center p-4;
+  }
+
+  .modal-overlay {
+    @apply absolute inset-0 bg-black/50 cursor-default border-none;
+  }
+
+  .modal-card {
+    @apply relative w-full max-w-md rounded-lg shadow-xl p-6;
+  }
+
+  .modal-card-scroll {
+    @apply max-h-[90vh] overflow-y-auto;
+  }
+
+  .modal-close {
+    @apply absolute top-3 right-3 p-1 rounded-md transition-colors;
+  }
+
+  .plot-title {
+    @apply text-base font-semibold;
+  }
+
+  .tab-button {
+    @apply px-4 py-2 rounded-t-lg text-sm font-medium transition-colors;
+  }
+
+  .dark .tab-button {
+    @apply text-slate-400 hover:text-slate-200 hover:bg-slate-800;
+  }
+
+  .dark .tab-button.active {
+    @apply text-slate-100 bg-slate-800 border-b-2;
+    border-bottom-color: var(--char-color, #3b82f6);
+  }
+
+  .light .tab-button {
+    @apply text-slate-600 hover:text-slate-800 hover:bg-slate-200;
+  }
+
+  .light .tab-button.active {
+    @apply text-slate-800 bg-white border-b-2;
+    border-bottom-color: var(--char-color, #3b82f6);
+  }
+
+  .stat-card {
+    @apply rounded-lg p-4 border-l-4;
+  }
+
+  .dark .stat-card {
+    @apply bg-slate-800/50 border-slate-600;
+  }
+
+  .light .stat-card {
+    @apply bg-white/80 border-slate-300;
+  }
+
+  .stat-label {
+    @apply text-slate-400;
+  }
+
+  .light .stat-label {
+    @apply text-slate-500;
+  }
+}
+
+/* Grid container styles */
+.overview-grid,
+.character-grid {
+  width: 100%;
+  min-height: 400px;
+  position: relative;
+}
+
+/* Grid item container - the actual card */
+.grid-card-item {
+  border-radius: 0.5rem;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dark .grid-card-item {
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(71, 85, 105, 0.5);
+}
+
+.light .grid-card-item {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(203, 213, 225, 0.8);
+}
+
+.grid-card-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Active state when dragging/resizing */
+.grid-card-active {
+  opacity: 0.8;
+  transform: scale(1.02);
+  z-index: 100;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+}
+
+/* Preview placeholder - shows where item will drop */
+.grid-card-preview {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+  border: 2px dashed rgb(59, 130, 246) !important;
+  border-radius: 0.5rem !important;
+  z-index: 1 !important;
+  pointer-events: none !important;
+}
+
+.dark .grid-card-preview {
+  background-color: rgba(59, 130, 246, 0.2) !important;
+  border-color: rgb(96, 165, 250) !important;
+}
+
+/* Resize handle - positioned inside the card */
+.grid-card-resizer {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 16px;
+  height: 16px;
+  cursor: se-resize;
+  opacity: 0;
+  transition: opacity 0.2s;
+  z-index: 10;
+}
+
+.grid-card-resizer::before {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 0 12px 12px;
+  border-color: transparent transparent rgba(59, 130, 246, 0.6) transparent;
+}
+
+.grid-card-item:hover .grid-card-resizer {
+  opacity: 1;
+}
+
+/* Content wrapper inside grid item */
+.grid-card-content {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Drag handle for moving cards */
+.drag-handle {
+  position: absolute;
+  top: 8px;
+  right: 72px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  cursor: grab;
+  z-index: 15;
+  opacity: 0.4;
+  transition: opacity 0.2s, background-color 0.2s;
+  touch-action: none;
+}
+
+.drag-handle:hover {
+  opacity: 1;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.dark .drag-handle {
+  color: #94a3b8;
+  background: rgba(30, 41, 59, 0.8);
+}
+
+.dark .drag-handle:hover {
+  background: rgba(51, 65, 85, 0.9);
+  color: #e2e8f0;
+}
+
+.light .drag-handle {
+  color: #64748b;
+  background: rgba(241, 245, 249, 0.8);
+}
+
+.light .drag-handle:hover {
+  background: rgba(226, 232, 240, 0.9);
+  color: #334155;
+}
+
+/* Static chart container - no background, just proper sizing */
+.static-chart {
+  height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Divider between static and dynamic graphs */
+.static-divider {
+  margin: 1.5rem 0;
+  border: none;
+  height: 1px;
+}
+
+.dark .static-divider {
+  background: rgba(71, 85, 105, 0.5);
+}
+
+.light .static-divider {
+  background: rgba(203, 213, 225, 0.5);
+}
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color: #e2e8f0;
+  background-color: #0f172a;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+/* Light mode support */
+.light {
+  color: #1e293b;
+  background-color: #f8fafc;
+}
+
+.light ::-webkit-scrollbar-track {
+  background: #e2e8f0;
+}
+
+.light ::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+}
+
+.light ::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Observable Plot tooltip styling */
+/* Dark mode (default) - set CSS custom properties for Observable Plot */
+:root {
+  --plot-background: #1e293b;
+}
+
+/* Tooltip container styling */
+[aria-label="tip"] {
+  --plot-background: #1e293b;
+  color: #e2e8f0;
+}
+
+[aria-label="tip"] path {
+  fill: #1e293b !important;
+  stroke: #475569 !important;
+}
+
+[aria-label="tip"] text {
+  fill: #e2e8f0 !important;
+}
+
+/* Light mode tooltip styling */
+.light {
+  --plot-background: #ffffff;
+}
+
+.light [aria-label="tip"] {
+  --plot-background: #ffffff;
+  color: #1e293b;
+}
+
+.light [aria-label="tip"] path {
+  fill: #ffffff !important;
+  stroke: #cbd5e1 !important;
+}
+
+.light [aria-label="tip"] text {
+  fill: #1e293b !important;
+}
