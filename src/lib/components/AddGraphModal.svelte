@@ -3,7 +3,7 @@
   import { PLOT_FIELDS, type GraphConfig, type GraphType, type PlotFieldKey, getFieldLabel } from '$lib/stores/graphs';
 
   interface Props {
-    onAdd: (config: Omit<GraphConfig, 'id'>) => void;
+    onAdd: (config: Omit<GraphConfig, 'id' | 'x' | 'y' | 'w' | 'h'>) => void;
     onClose: () => void;
   }
 
@@ -52,7 +52,7 @@
   function handleSubmit(e: Event) {
     e.preventDefault();
     
-    let config: Omit<GraphConfig, 'id'>;
+    let config: Omit<GraphConfig, 'id' | 'x' | 'y' | 'w' | 'h'>;
     
     switch (graphType) {
       case 'survival':
@@ -168,7 +168,7 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <!-- Modal backdrop -->
 <div 
-  class="fixed inset-0 z-50 flex items-center justify-center p-4"
+  class="modal-root"
   onkeydown={handleKeydown}
   role="dialog"
   aria-modal="true"
@@ -177,21 +177,21 @@
   <!-- Backdrop -->
   <button 
     type="button"
-    class="absolute inset-0 bg-black/50 cursor-default border-none"
+    class="modal-overlay"
     onclick={onClose}
     aria-label="Close modal"
   ></button>
   
   <!-- Modal content -->
   <div 
-    class="relative w-full max-w-md rounded-lg shadow-xl p-6"
+    class="modal-card"
     class:bg-slate-800={$isDarkMode}
     class:bg-white={!$isDarkMode}
   >
     <!-- Close button -->
     <button
       type="button"
-      class="absolute top-3 right-3 p-1 rounded-md transition-colors"
+      class="modal-close"
       class:text-slate-400={$isDarkMode}
       class:hover:text-slate-200={$isDarkMode}
       class:hover:bg-slate-700={$isDarkMode}
@@ -213,13 +213,13 @@
     <form onsubmit={handleSubmit} class="space-y-4">
       <!-- Graph Type -->
       <div>
-        <label for="graph-type" class="block text-sm font-medium mb-1" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
+        <label for="graph-type" class="form-label mb-1" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
           Graph Type
         </label>
         <select
           id="graph-type"
           bind:value={graphType}
-          class="w-full px-3 py-2 rounded-md border text-sm"
+          class="form-input w-full"
           class:bg-slate-700={$isDarkMode}
           class:border-slate-600={$isDarkMode}
           class:text-slate-100={$isDarkMode}
@@ -246,7 +246,7 @@
             id="group-by-char"
             type="checkbox"
             bind:checked={groupByCharacter}
-            class="w-4 h-4 rounded"
+            class="form-checkbox"
           />
           <label for="group-by-char" class="text-sm" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
             Group by character
@@ -278,13 +278,13 @@
       <!-- X Field (for most graph types) -->
       {#if graphType !== 'survival' && graphType !== 'winrate-waffle' && graphType !== 'relic-table' && graphType !== 'card-table'}
       <div>
-        <label for="x-field" class="block text-sm font-medium mb-1" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
+        <label for="x-field" class="form-label mb-1" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
           {graphType === 'histogram' ? 'Value Field' : graphType === 'boxplot' ? 'Value Field' : 'X Axis Field'}
         </label>
         <select
           id="x-field"
           bind:value={xField}
-          class="w-full px-3 py-2 rounded-md border text-sm"
+          class="form-input w-full"
           class:bg-slate-700={$isDarkMode}
           class:border-slate-600={$isDarkMode}
           class:text-slate-100={$isDarkMode}
@@ -301,13 +301,13 @@
       <!-- Y Field (for scatter, regression, density, boxplot) -->
       {#if graphType === 'scatter' || graphType === 'regression' || graphType === 'density' || graphType === 'boxplot'}
         <div>
-          <label for="y-field" class="block text-sm font-medium mb-1" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
+          <label for="y-field" class="form-label mb-1" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
             {graphType === 'boxplot' ? 'Group By Field' : 'Y Axis Field'}
           </label>
           <select
             id="y-field"
             bind:value={yField}
-            class="w-full px-3 py-2 rounded-md border text-sm"
+            class="form-input w-full"
             class:bg-slate-700={$isDarkMode}
             class:border-slate-600={$isDarkMode}
             class:text-slate-100={$isDarkMode}
@@ -326,7 +326,7 @@
       <!-- Bins (only for histogram) -->
       {#if graphType === 'histogram'}
         <div>
-          <label for="bins" class="block text-sm font-medium mb-1" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
+          <label for="bins" class="form-label mb-1" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
             Number of Bins
           </label>
           <input
@@ -335,7 +335,7 @@
             bind:value={bins}
             min="5"
             max="50"
-            class="w-full px-3 py-2 rounded-md border text-sm"
+            class="form-input w-full"
             class:bg-slate-700={$isDarkMode}
             class:border-slate-600={$isDarkMode}
             class:text-slate-100={$isDarkMode}
@@ -353,7 +353,7 @@
             id="show-confidence"
             type="checkbox"
             bind:checked={showConfidence}
-            class="w-4 h-4 rounded"
+            class="form-checkbox"
           />
           <label for="show-confidence" class="text-sm" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
             Show 95% confidence interval
@@ -364,7 +364,7 @@
       <!-- Density options -->
       {#if graphType === 'density'}
         <div>
-          <label for="bandwidth" class="block text-sm font-medium mb-1" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
+          <label for="bandwidth" class="form-label mb-1" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
             Bandwidth (smoothing)
           </label>
           <input
@@ -373,7 +373,7 @@
             bind:value={bandwidth}
             min="5"
             max="100"
-            class="w-full px-3 py-2 rounded-md border text-sm"
+            class="form-input w-full"
             class:bg-slate-700={$isDarkMode}
             class:border-slate-600={$isDarkMode}
             class:text-slate-100={$isDarkMode}
@@ -391,7 +391,7 @@
             id="show-boss-floors"
             type="checkbox"
             bind:checked={showBossFloors}
-            class="w-4 h-4 rounded"
+            class="form-checkbox"
           />
           <label for="show-boss-floors" class="text-sm" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
             Show boss floor markers (Act 1, 2, 3, Heart)
@@ -401,7 +401,7 @@
 
       <!-- Custom Title (optional) -->
       <div>
-        <label for="custom-title" class="block text-sm font-medium mb-1" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
+        <label for="custom-title" class="form-label mb-1" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
           Custom Title (optional)
         </label>
         <input
@@ -409,7 +409,7 @@
           type="text"
           bind:value={customTitle}
           placeholder={autoTitle()}
-          class="w-full px-3 py-2 rounded-md border text-sm"
+          class="form-input w-full"
           class:bg-slate-700={$isDarkMode}
           class:border-slate-600={$isDarkMode}
           class:text-slate-100={$isDarkMode}
@@ -425,14 +425,14 @@
       <div class="flex gap-3 pt-2">
         <button
           type="submit"
-          class="flex-1 px-4 py-2 rounded-md text-sm font-medium bg-blue-600 hover:bg-blue-500 text-white transition-colors"
+          class="btn btn-md btn-primary flex-1"
         >
           Add Graph
         </button>
         <button
           type="button"
           onclick={onClose}
-          class="px-4 py-2 rounded-md text-sm font-medium transition-colors"
+          class="btn btn-md"
           class:bg-slate-700={$isDarkMode}
           class:hover:bg-slate-600={$isDarkMode}
           class:text-slate-200={$isDarkMode}

@@ -45,6 +45,30 @@ Download the latest release for your platform from [Releases](../../releases):
 - **Linux**: `.AppImage`, `.deb`, or `.rpm`
 - **Windows**: `.msi` or `.exe` installer
 
+### Performance Note (Linux)
+
+On Linux, the native app uses WebKitGTK which may have hardware acceleration disabled by default, causing poor rendering performance compared to browsers. To fix this:
+
+#### Option 1: Use the GPU-enabled launch script
+```bash
+# Run in dev mode with hardware acceleration
+pnpm tauri:dev:gpu
+
+# Or for production builds, use the launch script:
+cd src-tauri/target/release
+./launch-with-gpu.sh
+```
+
+#### Option 2: Set environment variables manually
+```bash
+export WEBKIT_DISABLE_COMPOSITING_MODE=0
+export WEBKIT_DISABLE_DMABUF_RENDERER=0
+pnpm tauri dev
+```
+
+#### Option 3: Run via browser
+The web version (via `pnpm dev`) always has excellent performance since browsers have GPU acceleration enabled by default.
+
 ### Build from Source
 
 #### Prerequisites

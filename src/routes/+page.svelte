@@ -1,7 +1,6 @@
 <script lang="ts">
   import { Either } from 'effect';
-  import { dndzone, SHADOW_PLACEHOLDER_ITEM_ID } from 'svelte-dnd-action';
-  import { flip } from 'svelte/animate';
+  import Grid, { GridItem } from '@appulsauce/svelte-grid';
   import { 
     effectApi, 
     runEffect, 
@@ -22,10 +21,12 @@
     initializePathFromStorage,
     type RunsPathInfo 
   } from '$lib/stores/settings';
-  import { GraphCard, AddGraphModal } from '$lib/components';
+  import { GraphCard, AddGraphModal, UpdateManager } from '$lib/components';
 
-  // DnD settings
-  const flipDurationMs = 200;
+  // Grid settings
+  const GRID_COLS = 2;
+  const GRID_ITEM_SIZE = { height: 400 };
+  const GRID_GAP = 24;
 
   // Character tabs
   const CHARACTERS: CharacterId[] = ['IRONCLAD', 'THE_SILENT', 'DEFECT', 'WATCHER'];
@@ -42,6 +43,19 @@
   let customPathInput = $state('');
   let pathError = $state<string | null>(null);
   let isSavingPath = $state(false);
+
+  // Mutable copies of graph positions for two-way binding
+  let overviewItems = $state<GraphConfig[]>([]);
+  let characterItems = $state<GraphConfig[]>([]);
+
+  // Sync store data to local mutable state
+  $effect(() => {
+    overviewItems = [...$overviewGraphs];
+  });
+
+  $effect(() => {
+    characterItems = [...$characterGraphs];
+  });
 
   // Derived state for current character's runs
   let characterRuns = $derived(
@@ -124,22 +138,14 @@
     }
   }
 
-  // Handle drag-and-drop for overview graphs
-  function handleOverviewDndConsider(e: CustomEvent<{ items: GraphConfig[] }>) {
-    overviewGraphs.set(e.detail.items);
+  // Save overview graph positions back to store
+  function saveOverviewPositions() {
+    overviewGraphs.set(overviewItems);
   }
 
-  function handleOverviewDndFinalize(e: CustomEvent<{ items: GraphConfig[] }>) {
-    overviewGraphs.reorder(e.detail.items);
-  }
-
-  // Handle drag-and-drop for character graphs
-  function handleCharacterDndConsider(e: CustomEvent<{ items: GraphConfig[] }>) {
-    characterGraphs.set(e.detail.items);
-  }
-
-  function handleCharacterDndFinalize(e: CustomEvent<{ items: GraphConfig[] }>) {
-    characterGraphs.reorder(e.detail.items);
+  // Save character graph positions back to store
+  function saveCharacterPositions() {
+    characterGraphs.set(characterItems);
   }
 
   // Path settings handlers
@@ -195,21 +201,27 @@
         Analyze your runs across all characters
       </p>
     </div>
-    <button
-      class="p-2 rounded-lg transition-colors"
-      class:bg-slate-700={$isDarkMode}
-      class:hover:bg-slate-600={$isDarkMode}
-      class:text-slate-300={$isDarkMode}
-      class:bg-slate-200={!$isDarkMode}
-      class:hover:bg-slate-300={!$isDarkMode}
-      class:text-slate-700={!$isDarkMode}
-      onclick={() => showSettings = !showSettings}
-      title="Settings"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-        <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
-      </svg>
-    </button>
+    <div class="flex items-center gap-3">
+      <!-- Update Manager -->
+      <UpdateManager />
+      
+      <!-- Settings button -->
+      <button
+        class="icon-btn icon-btn-md rounded-lg"
+        class:bg-slate-700={$isDarkMode}
+        class:hover:bg-slate-600={$isDarkMode}
+        class:text-slate-300={$isDarkMode}
+        class:bg-slate-200={!$isDarkMode}
+        class:hover:bg-slate-300={!$isDarkMode}
+        class:text-slate-700={!$isDarkMode}
+        onclick={() => showSettings = !showSettings}
+        title="Settings"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
+        </svg>
+      </button>
+    </div>
   </header>
 
   <!-- Settings Panel -->
@@ -229,7 +241,7 @@
         <div>
           <label 
             for="runs-path-input"
-            class="block text-sm font-medium mb-2"
+            class="form-label mb-2"
             class:text-slate-300={$isDarkMode}
             class:text-slate-700={!$isDarkMode}
           >
@@ -245,7 +257,7 @@
               type="text"
               bind:value={customPathInput}
               placeholder="/path/to/SlayTheSpire/runs"
-              class="flex-1 px-3 py-2 rounded-md text-sm"
+              class="form-input flex-1"
               class:bg-slate-700={$isDarkMode}
               class:text-slate-100={$isDarkMode}
               class:border-slate-600={$isDarkMode}
@@ -255,7 +267,7 @@
               disabled={isSavingPath}
             />
             <button
-              class="px-4 py-2 text-sm font-medium rounded-md transition-colors bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-50"
+              class="btn btn-md btn-primary"
               onclick={handleSavePath}
               disabled={isSavingPath}
             >
@@ -263,7 +275,7 @@
             </button>
             {#if pathInfo?.is_custom}
               <button
-                class="px-4 py-2 text-sm font-medium rounded-md transition-colors"
+                class="btn btn-md"
                 class:bg-slate-600={$isDarkMode}
                 class:hover:bg-slate-500={$isDarkMode}
                 class:text-slate-200={$isDarkMode}
@@ -390,7 +402,7 @@
           </h2>
           <div class="flex gap-2">
             <button
-              class="px-3 py-1.5 text-sm rounded-md transition-colors"
+              class="btn btn-sm"
               class:bg-slate-700={$isDarkMode}
               class:hover:bg-slate-600={$isDarkMode}
               class:text-slate-200={$isDarkMode}
@@ -402,7 +414,7 @@
               Reset to Defaults
             </button>
             <button
-              class="px-3 py-1.5 text-sm rounded-md bg-blue-600 hover:bg-blue-500 text-white transition-colors"
+              class="btn btn-sm btn-primary"
               onclick={() => showAddModal = true}
             >
               + Add Graph
@@ -411,40 +423,70 @@
         </div>
         <!-- Static bar charts -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <BarChart 
-            data={getWinRateData(stats)}
-            title="Win Rate by Character"
-            xLabel="Character"
-            yLabel="Win Rate (%)"
-          />
-          <BarChart 
-            data={getAvgFloorData(stats)}
-            title="Average Floor Reached"
-            xLabel="Character"
-            yLabel="Floor"
-          />
+          <div class="static-chart">
+            <BarChart 
+              data={getWinRateData(stats)}
+              title="Win Rate by Character"
+              xLabel="Character"
+              yLabel="Win Rate (%)"
+            />
+          </div>
+          <div class="static-chart">
+            <BarChart 
+              data={getAvgFloorData(stats)}
+              title="Average Floor Reached"
+              xLabel="Character"
+              yLabel="Floor"
+            />
+          </div>
         </div>
+        <hr class="static-divider" />
         <!-- Draggable custom graphs -->
-        <div 
-          class="grid grid-cols-1 lg:grid-cols-2 gap-6"
-          use:dndzone={{ items: $overviewGraphs, flipDurationMs, type: 'overview-graphs' }}
-          onconsider={handleOverviewDndConsider}
-          onfinalize={handleOverviewDndFinalize}
+        <Grid 
+          cols={GRID_COLS} 
+          itemSize={GRID_ITEM_SIZE} 
+          gap={GRID_GAP} 
+          collision="push"
+          class="overview-grid"
         >
-          {#each $overviewGraphs as graph (graph.id)}
-            <div animate:flip={{ duration: flipDurationMs }}>
-              {#if graph.id !== SHADOW_PLACEHOLDER_ITEM_ID}
-                <GraphCard
-                  config={graph}
-                  runs={allRuns}
-                  colorFn={getRunColor}
-                  onDelete={() => overviewGraphs.remove(graph.id)}
-                  onUpdate={(changes) => overviewGraphs.updateGraph(graph.id, changes)}
-                />
-              {/if}
-            </div>
+          {#each overviewItems as graph (graph.id)}
+            <GridItem
+              id={graph.id}
+              bind:x={graph.x}
+              bind:y={graph.y}
+              bind:w={graph.w}
+              bind:h={graph.h}
+              onchange={() => saveOverviewPositions()}
+              class="grid-card-item"
+              activeClass="grid-card-active"
+              previewClass="grid-card-preview"
+              resizerClass="grid-card-resizer"
+            >
+              {#snippet moveHandle({ moveStart })}
+                <div 
+                  class="drag-handle"
+                  onpointerdown={moveStart}
+                  title="Drag to move"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
+                  </svg>
+                </div>
+              {/snippet}
+              {#snippet children()}
+                <div class="grid-card-content">
+                  <GraphCard
+                    config={graph}
+                    runs={allRuns}
+                    colorFn={getRunColor}
+                    onDelete={() => overviewGraphs.remove(graph.id)}
+                    onUpdate={(changes) => overviewGraphs.updateGraph(graph.id, changes)}
+                  />
+                </div>
+              {/snippet}
+            </GridItem>
           {/each}
-        </div>
+        </Grid>
       </div>
     {:else}
       <!-- Character-specific view -->
@@ -490,7 +532,7 @@
           </h2>
           <div class="flex gap-2">
             <button
-              class="px-3 py-1.5 text-sm rounded-md transition-colors"
+              class="btn btn-sm"
               class:bg-slate-700={$isDarkMode}
               class:hover:bg-slate-600={$isDarkMode}
               class:text-slate-200={$isDarkMode}
@@ -502,33 +544,58 @@
               Reset to Defaults
             </button>
             <button
-              class="px-3 py-1.5 text-sm rounded-md bg-blue-600 hover:bg-blue-500 text-white transition-colors"
+              class="btn btn-sm btn-primary"
               onclick={() => showAddModal = true}
             >
               + Add Graph
             </button>
           </div>
         </div>
-        <div 
-          class="grid grid-cols-1 lg:grid-cols-2 gap-6"
-          use:dndzone={{ items: $characterGraphs, flipDurationMs, type: 'character-graphs' }}
-          onconsider={handleCharacterDndConsider}
-          onfinalize={handleCharacterDndFinalize}
+        <Grid 
+          cols={GRID_COLS} 
+          itemSize={GRID_ITEM_SIZE} 
+          gap={GRID_GAP} 
+          collision="push"
+          class="character-grid"
         >
-          {#each $characterGraphs as graph (graph.id)}
-            <div animate:flip={{ duration: flipDurationMs }}>
-              {#if graph.id !== SHADOW_PLACEHOLDER_ITEM_ID}
-                <GraphCard
-                  config={graph}
-                  runs={characterRuns}
-                  colorFn={getRunColor}
-                  onDelete={() => characterGraphs.remove(graph.id)}
-                  onUpdate={(changes) => characterGraphs.updateGraph(graph.id, changes)}
-                />
-              {/if}
-            </div>
+          {#each characterItems as graph (graph.id)}
+            <GridItem
+              id={graph.id}
+              bind:x={graph.x}
+              bind:y={graph.y}
+              bind:w={graph.w}
+              bind:h={graph.h}
+              onchange={() => saveCharacterPositions()}
+              class="grid-card-item"
+              activeClass="grid-card-active"
+              previewClass="grid-card-preview"
+              resizerClass="grid-card-resizer"
+            >
+              {#snippet moveHandle({ moveStart })}
+                <div 
+                  class="drag-handle"
+                  onpointerdown={moveStart}
+                  title="Drag to move"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
+                  </svg>
+                </div>
+              {/snippet}
+              {#snippet children()}
+                <div class="grid-card-content">
+                  <GraphCard
+                    config={graph}
+                    runs={characterRuns}
+                    colorFn={getRunColor}
+                    onDelete={() => characterGraphs.remove(graph.id)}
+                    onUpdate={(changes) => characterGraphs.updateGraph(graph.id, changes)}
+                  />
+                </div>
+              {/snippet}
+            </GridItem>
           {/each}
-        </div>
+        </Grid>
       </div>
     {/if}
   {/if}
@@ -549,52 +616,5 @@
 {/if}
 
 <style>
-  .tab-button {
-    @apply px-4 py-2 rounded-t-lg text-sm font-medium transition-colors;
-  }
-  
-  :global(.dark) .tab-button {
-    @apply text-slate-400 hover:text-slate-200 hover:bg-slate-800;
-  }
-  
-  :global(.dark) .tab-button.active {
-    @apply text-slate-100 bg-slate-800 border-b-2;
-    border-bottom-color: var(--char-color, #3b82f6);
-  }
-  
-  :global(.light) .tab-button {
-    @apply text-slate-600 hover:text-slate-800 hover:bg-slate-200;
-  }
-  
-  :global(.light) .tab-button.active {
-    @apply text-slate-800 bg-white border-b-2;
-    border-bottom-color: var(--char-color, #3b82f6);
-  }
-
-  .stat-card {
-    @apply rounded-lg p-4 border-l-4;
-  }
-  
-  :global(.dark) .stat-card {
-    @apply bg-slate-800/50 border-slate-600;
-  }
-  
-  :global(.light) .stat-card {
-    @apply bg-white/80 border-slate-300;
-  }
-  
-  .stat-label {
-    @apply text-slate-400;
-  }
-  
-  :global(.light) .stat-label {
-    @apply text-slate-500;
-  }
-
-  /* Drag and drop styles */
-  :global([data-is-dnd-shadow-item]) {
-    opacity: 0.5;
-    border: 2px dashed #3b82f6;
-    border-radius: 0.5rem;
-  }
+  /* Styles moved to app.css */
 </style>

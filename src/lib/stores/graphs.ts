@@ -54,6 +54,11 @@ export interface GraphConfig {
   yField: PlotFieldKey;
   xLabel: string;
   yLabel: string;
+  // Grid position properties
+  x: number;
+  y: number;
+  w: number;
+  h: number;
   // For histogram, only xField is used (as value field)
   bins?: number;
   // For survival curves, optionally group by character
@@ -79,6 +84,10 @@ export const DEFAULT_OVERVIEW_GRAPHS: GraphConfig[] = [
     yField: 'score',
     xLabel: 'Floor Reached',
     yLabel: 'Score',
+    x: 0,
+    y: 0,
+    w: 1,
+    h: 1,
   },
   {
     id: 'overview-2',
@@ -89,6 +98,10 @@ export const DEFAULT_OVERVIEW_GRAPHS: GraphConfig[] = [
     xLabel: 'Floor',
     yLabel: 'Count',
     bins: 15,
+    x: 1,
+    y: 0,
+    w: 1,
+    h: 1,
   },
   {
     id: 'overview-4',
@@ -99,6 +112,10 @@ export const DEFAULT_OVERVIEW_GRAPHS: GraphConfig[] = [
     xLabel: 'Deck Size',
     yLabel: 'Floor Reached',
     showConfidence: true,
+    x: 0,
+    y: 1,
+    w: 1,
+    h: 1,
   },
   {
     id: 'overview-5',
@@ -108,6 +125,10 @@ export const DEFAULT_OVERVIEW_GRAPHS: GraphConfig[] = [
     yField: 'floor_reached',
     xLabel: '',
     yLabel: '',
+    x: 1,
+    y: 1,
+    w: 1,
+    h: 1,
   },
   {
     id: 'overview-6',
@@ -118,6 +139,10 @@ export const DEFAULT_OVERVIEW_GRAPHS: GraphConfig[] = [
     xLabel: 'Floor Reached',
     yLabel: 'Score',
     bandwidth: 15,
+    x: 0,
+    y: 2,
+    w: 1,
+    h: 1,
   },
   {
     id: 'overview-7',
@@ -127,6 +152,10 @@ export const DEFAULT_OVERVIEW_GRAPHS: GraphConfig[] = [
     yField: 'floor_reached',
     xLabel: '',
     yLabel: '',
+    x: 1,
+    y: 2,
+    w: 1,
+    h: 1,
   },
 ];
 
@@ -140,6 +169,10 @@ export const DEFAULT_CHARACTER_GRAPHS: GraphConfig[] = [
     yField: 'floor_reached',
     xLabel: 'Deck Size',
     yLabel: 'Floor Reached',
+    x: 0,
+    y: 0,
+    w: 1,
+    h: 1,
   },
   {
     id: 'char-2',
@@ -150,6 +183,10 @@ export const DEFAULT_CHARACTER_GRAPHS: GraphConfig[] = [
     xLabel: 'Floor',
     yLabel: 'Count',
     bins: 15,
+    x: 1,
+    y: 0,
+    w: 1,
+    h: 1,
   },
   {
     id: 'char-3',
@@ -159,6 +196,10 @@ export const DEFAULT_CHARACTER_GRAPHS: GraphConfig[] = [
     yField: 'floor_reached',
     xLabel: 'Elites Killed',
     yLabel: 'Floor Reached',
+    x: 0,
+    y: 1,
+    w: 1,
+    h: 1,
   },
   {
     id: 'char-4',
@@ -168,6 +209,10 @@ export const DEFAULT_CHARACTER_GRAPHS: GraphConfig[] = [
     yField: 'floor_reached',
     xLabel: 'Relics',
     yLabel: 'Floor Reached',
+    x: 1,
+    y: 1,
+    w: 1,
+    h: 1,
   },
   {
     id: 'char-5',
@@ -177,11 +222,40 @@ export const DEFAULT_CHARACTER_GRAPHS: GraphConfig[] = [
     yField: 'floor_reached',
     xLabel: '',
     yLabel: '',
+    x: 0,
+    y: 2,
+    w: 2,
+    h: 1,
   },
 ];
 
 const STORAGE_KEY_OVERVIEW = 'sts-graphs-overview';
 const STORAGE_KEY_CHARACTER = 'sts-graphs-character';
+
+// Helper to find next available position in a 2-column grid
+function findNextPosition(graphs: GraphConfig[], cols: number = 2): { x: number; y: number } {
+  if (graphs.length === 0) return { x: 0, y: 0 };
+  
+  // Find the maximum y + h to get the next row
+  let maxY = 0;
+  for (const g of graphs) {
+    const bottom = g.y + g.h;
+    if (bottom > maxY) maxY = bottom;
+  }
+  
+  // Try to find a gap in existing rows first
+  for (let y = 0; y < maxY; y++) {
+    for (let x = 0; x < cols; x++) {
+      const occupied = graphs.some(g => 
+        x >= g.x && x < g.x + g.w && y >= g.y && y < g.y + g.h
+      );
+      if (!occupied) return { x, y };
+    }
+  }
+  
+  // No gap found, add to next row
+  return { x: 0, y: maxY };
+}
 
 function createGraphStore(storageKey: string, defaults: GraphConfig[]) {
   // Load from localStorage or use defaults
@@ -190,7 +264,15 @@ function createGraphStore(storageKey: string, defaults: GraphConfig[]) {
     const stored = localStorage.getItem(storageKey);
     if (stored) {
       try {
-        initial = JSON.parse(stored);
+        const parsed = JSON.parse(stored);
+        // Migrate old data without grid positions
+        initial = parsed.map((g: GraphConfig, i: number) => ({
+          ...g,
+          x: g.x ?? (i % 2),
+          y: g.y ?? Math.floor(i / 2),
+          w: g.w ?? 1,
+          h: g.h ?? 1,
+        }));
       } catch {
         initial = defaults;
       }
@@ -207,11 +289,15 @@ function createGraphStore(storageKey: string, defaults: GraphConfig[]) {
         localStorage.setItem(storageKey, JSON.stringify(graphs));
       }
     },
-    add: (config: Omit<GraphConfig, 'id'>) => {
+    add: (config: Omit<GraphConfig, 'id' | 'x' | 'y' | 'w' | 'h'>) => {
       update(graphs => {
+        const position = findNextPosition(graphs);
         const newGraph: GraphConfig = {
           ...config,
           id: `custom-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          ...position,
+          w: 1,
+          h: 1,
         };
         const updated = [...graphs, newGraph];
         if (browser) {
@@ -240,11 +326,16 @@ function createGraphStore(storageKey: string, defaults: GraphConfig[]) {
         return updated;
       });
     },
-    reorder: (newOrder: GraphConfig[]) => {
-      set(newOrder);
-      if (browser) {
-        localStorage.setItem(storageKey, JSON.stringify(newOrder));
-      }
+    updatePosition: (id: string, x: number, y: number, w: number, h: number) => {
+      update(graphs => {
+        const updated = graphs.map(g =>
+          g.id === id ? { ...g, x, y, w, h } : g
+        );
+        if (browser) {
+          localStorage.setItem(storageKey, JSON.stringify(updated));
+        }
+        return updated;
+      });
     },
     reset: () => {
       set(defaults);

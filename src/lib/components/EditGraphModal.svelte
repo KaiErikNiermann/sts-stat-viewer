@@ -113,8 +113,10 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div 
-  class="fixed inset-0 z-50 flex items-center justify-center p-4"
+  class="modal-root"
   onkeydown={handleKeydown}
+  onclick={(e) => e.stopPropagation()}
+  onpointerdown={(e) => e.stopPropagation()}
   role="dialog"
   aria-modal="true"
   tabindex="-1"
@@ -122,21 +124,21 @@
   <!-- Backdrop -->
   <button 
     type="button"
-    class="absolute inset-0 bg-black/50 cursor-default border-none"
+    class="modal-overlay"
     onclick={onClose}
     aria-label="Close modal"
   ></button>
   
   <!-- Modal content -->
   <div 
-    class="relative w-full max-w-md rounded-lg shadow-xl p-6 max-h-[90vh] overflow-y-auto"
+    class="modal-card modal-card-scroll"
     class:bg-slate-800={$isDarkMode}
     class:bg-white={!$isDarkMode}
   >
     <!-- Close button -->
     <button
       type="button"
-      class="absolute top-3 right-3 p-1 rounded-md transition-colors"
+      class="modal-close"
       class:text-slate-400={$isDarkMode}
       class:hover:text-slate-200={$isDarkMode}
       class:hover:bg-slate-700={$isDarkMode}
@@ -161,14 +163,14 @@
     <form onsubmit={handleSubmit} class="space-y-4">
       <!-- Title -->
       <div>
-        <label for="edit-title" class="block text-sm font-medium mb-1" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
+        <label for="edit-title" class="form-label mb-1" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
           Title
         </label>
         <input
           id="edit-title"
           type="text"
           bind:value={title}
-          class="w-full px-3 py-2 rounded-md border text-sm"
+          class="form-input w-full"
           class:bg-slate-700={$isDarkMode}
           class:border-slate-600={$isDarkMode}
           class:text-slate-100={$isDarkMode}
@@ -181,13 +183,13 @@
       <!-- X Field (for scatter, regression, density, histogram, boxplot) -->
       {#if showXYFields || showXFieldOnly}
         <div>
-          <label for="edit-x-field" class="block text-sm font-medium mb-1" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
+          <label for="edit-x-field" class="form-label mb-1" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
             {showXFieldOnly ? 'Value Field' : graphType === 'boxplot' ? 'Value Field' : 'X Axis Field'}
           </label>
           <select
             id="edit-x-field"
             bind:value={xField}
-            class="w-full px-3 py-2 rounded-md border text-sm"
+            class="form-input w-full"
             class:bg-slate-700={$isDarkMode}
             class:border-slate-600={$isDarkMode}
             class:text-slate-100={$isDarkMode}
@@ -205,13 +207,13 @@
       <!-- Y Field (for scatter, regression, density, boxplot) -->
       {#if showXYFields}
         <div>
-          <label for="edit-y-field" class="block text-sm font-medium mb-1" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
+          <label for="edit-y-field" class="form-label mb-1" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
             {graphType === 'boxplot' ? 'Group By Field' : 'Y Axis Field'}
           </label>
           <select
             id="edit-y-field"
             bind:value={yField}
-            class="w-full px-3 py-2 rounded-md border text-sm"
+            class="form-input w-full"
             class:bg-slate-700={$isDarkMode}
             class:border-slate-600={$isDarkMode}
             class:text-slate-100={$isDarkMode}
@@ -229,7 +231,7 @@
       <!-- Bins (histogram) -->
       {#if showBinsOption}
         <div>
-          <label for="edit-bins" class="block text-sm font-medium mb-1" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
+          <label for="edit-bins" class="form-label mb-1" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
             Number of Bins
           </label>
           <input
@@ -255,7 +257,7 @@
             id="edit-group-by-char"
             type="checkbox"
             bind:checked={groupByCharacter}
-            class="w-4 h-4 rounded"
+            class="form-checkbox"
           />
           <label for="edit-group-by-char" class="text-sm" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
             Group by character
@@ -270,7 +272,7 @@
             id="edit-show-confidence"
             type="checkbox"
             bind:checked={showConfidence}
-            class="w-4 h-4 rounded"
+            class="form-checkbox"
           />
           <label for="edit-show-confidence" class="text-sm" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
             Show 95% confidence interval
@@ -281,7 +283,7 @@
       <!-- Bandwidth (density) -->
       {#if showBandwidthOption}
         <div>
-          <label for="edit-bandwidth" class="block text-sm font-medium mb-1" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
+          <label for="edit-bandwidth" class="form-label mb-1" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
             Bandwidth (smoothing)
           </label>
           <input
@@ -307,7 +309,7 @@
             id="edit-boss-floors"
             type="checkbox"
             bind:checked={showBossFloors}
-            class="w-4 h-4 rounded"
+            class="form-checkbox"
           />
           <label for="edit-boss-floors" class="text-sm" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
             Show boss floor markers
@@ -322,7 +324,7 @@
             id="edit-normal-curve"
             type="checkbox"
             bind:checked={showNormalCurve}
-            class="w-4 h-4 rounded"
+            class="form-checkbox"
           />
           <label for="edit-normal-curve" class="text-sm" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
             Show normal distribution curve
@@ -334,14 +336,14 @@
       <div class="flex gap-3 pt-2">
         <button
           type="submit"
-          class="flex-1 px-4 py-2 rounded-md text-sm font-medium bg-blue-600 hover:bg-blue-500 text-white transition-colors"
+          class="btn btn-md btn-primary flex-1"
         >
           Save Changes
         </button>
         <button
           type="button"
           onclick={onClose}
-          class="px-4 py-2 rounded-md text-sm font-medium transition-colors"
+          class="btn btn-md"
           class:bg-slate-700={$isDarkMode}
           class:hover:bg-slate-600={$isDarkMode}
           class:text-slate-200={$isDarkMode}

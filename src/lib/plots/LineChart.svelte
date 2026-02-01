@@ -3,6 +3,7 @@
   import { onMount } from 'svelte';
   import type { LineChartData, PlotOptions } from './types';
   import { isDarkMode } from '$lib/stores/theme';
+  import { createDebouncedResizeObserver, calculatePlotDimensions, calculateTickCount } from '$lib/utils';
 
   // Boss floor markers
   const BOSS_FLOORS = [17, 34, 51, 57];
@@ -28,6 +29,9 @@
   }: Props = $props();
 
   let container: HTMLDivElement;
+  let wrapper: HTMLDivElement;
+  let containerWidth = $state(600);
+  let containerHeight = $state(350);
 
   function renderPlot() {
     if (!container || !data.length) return;
@@ -37,20 +41,27 @@
     const hasSeries = data.some(d => d.series);
     const hasColors = Object.keys(seriesColors).length > 0;
 
+    const { width: plotWidth, height: plotHeight } = calculatePlotDimensions(
+      containerWidth, containerHeight, { hasTitle: !!title }
+    );
+    
+    const xTicks = calculateTickCount(plotWidth);
+    const yTicks = calculateTickCount(plotHeight);
+
     const plotOptions: Parameters<typeof Plot.plot>[0] = {
-      width: options.width ?? 600,
-      height: options.height ?? 400,
-      marginTop: options.marginTop ?? 40,
-      marginRight: options.marginRight ?? 100,
-      marginBottom: options.marginBottom ?? 50,
-      marginLeft: options.marginLeft ?? 60,
+      width: options.width ?? plotWidth,
+      height: options.height ?? plotHeight,
+      marginTop: options.marginTop ?? 30,
+      marginRight: options.marginRight ?? 80,
+      marginBottom: options.marginBottom ?? 45,
+      marginLeft: options.marginLeft ?? 55,
       style: {
         background: 'transparent',
         color: $isDarkMode ? '#e2e8f0' : '#1e293b',
-        fontSize: '12px',
+        fontSize: '11px',
       },
-      x: { label: xLabel, grid: true },
-      y: { label: yLabel, grid: true },
+      x: { label: xLabel, grid: true, ticks: xTicks },
+      y: { label: yLabel, grid: true, ticks: yTicks },
       marks: [
         // Boss floor reference lines (vertical for X axis)
         ...(showXBossFloors ? BOSS_FLOORS.map(f => Plot.ruleX([f], {
@@ -88,8 +99,19 @@
   }
 
   onMount(() => {
+    let cleanup: (() => void) | undefined;
+    
+    if (wrapper) {
+      cleanup = createDebouncedResizeObserver(wrapper, ({ width, height }) => {
+        containerWidth = width;
+        containerHeight = height;
+      }, { debounceMs: 150 });
+    }
+
     renderPlot();
+
     return () => {
+      cleanup?.();
       if (container) container.innerHTML = '';
     };
   });
@@ -97,21 +119,42 @@
   $effect(() => {
     data;
     $isDarkMode;
+    containerWidth;
+    containerHeight;
     renderPlot();
   });
 </script>
 
-<div class="line-chart">
+<div class="line-chart" bind:this={wrapper}>
   {#if title}
-    <h3 class="text-lg font-semibold mb-2 plot-title">{title}</h3>
+    <h3 class="plot-title mb-1">{title}</h3>
   {/if}
-  <div bind:this={container} class="plot-container flex justify-center"></div>
+  <div bind:this={container} class="plot-container"></div>
 </div>
 
 <style>
   .line-chart {
-    padding: 1rem;
+    padding: 0.75rem;
     border-radius: 0.5rem;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .plot-container {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .plot-container :global(svg) {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
   }
   
   :global(.dark) .line-chart {

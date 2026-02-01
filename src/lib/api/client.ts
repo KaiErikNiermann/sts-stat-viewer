@@ -18,8 +18,6 @@ import type { paths, components } from './schema';
 // ============================================================================
 
 export type HealthResponse = components['schemas']['HealthResponse'];
-export type GreetRequest = components['schemas']['GreetRequest'];
-export type GreetResponse = components['schemas']['GreetResponse'];
 export type ApiError = components['schemas']['ApiError'];
 
 // Health status as string literal type for exhaustive matching
@@ -191,38 +189,6 @@ export const effectApi = {
       },
       catch: (error) => wrapFetchError(error, 'health check'),
     }),
-
-  /**
-   * Greet user - POST /api/greet
-   * Sends a greeting request with a name in the body
-   */
-  greet: (request: GreetRequest): Effect.Effect<GreetResponse, ApiClientError> =>
-    Effect.tryPromise({
-      try: async () => {
-        const result = await apiClient.POST('/api/greet', {
-          body: request,
-        });
-        return processResponse(result, 'greet');
-      },
-      catch: (error) => wrapFetchError(error, 'greet'),
-    }),
-
-  /**
-   * Greet user by path - GET /api/greet/{name}
-   * Sends a greeting request with name as path parameter
-   */
-  greetByPath: (name: string): Effect.Effect<GreetResponse, ApiClientError> =>
-    Effect.tryPromise({
-      try: async () => {
-        const result = await apiClient.GET('/api/greet/{name}', {
-          params: {
-            path: { name },
-          },
-        });
-        return processResponse(result, 'greetByPath');
-      },
-      catch: (error) => wrapFetchError(error, 'greetByPath'),
-    }),
 } as const;
 
 // ============================================================================
@@ -242,36 +208,6 @@ export const api = {
       return Either.right(processResponse(result, 'health check'));
     } catch (error) {
       return Either.left(wrapFetchError(error, 'health check'));
-    }
-  },
-
-  /**
-   * Greet user - POST /api/greet
-   */
-  greet: async (request: GreetRequest): Promise<Either.Either<GreetResponse, ApiClientError>> => {
-    try {
-      const result = await apiClient.POST('/api/greet', {
-        body: request,
-      });
-      return Either.right(processResponse(result, 'greet'));
-    } catch (error) {
-      return Either.left(wrapFetchError(error, 'greet'));
-    }
-  },
-
-  /**
-   * Greet user by path - GET /api/greet/{name}
-   */
-  greetByPath: async (name: string): Promise<Either.Either<GreetResponse, ApiClientError>> => {
-    try {
-      const result = await apiClient.GET('/api/greet/{name}', {
-        params: {
-          path: { name },
-        },
-      });
-      return Either.right(processResponse(result, 'greetByPath'));
-    } catch (error) {
-      return Either.left(wrapFetchError(error, 'greetByPath'));
     }
   },
 } as const;

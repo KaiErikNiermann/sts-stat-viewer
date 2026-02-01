@@ -10,6 +10,8 @@
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "tauri": "tauri",
+    "tauri:dev": "WEBKIT_DISABLE_COMPOSITING_MODE=1 WEBKIT_DISABLE_DMABUF_RENDERER=1 tauri dev",
+    "tauri:dev:gpu": "WEBKIT_DISABLE_COMPOSITING_MODE=0 WEBKIT_DISABLE_DMABUF_RENDERER=0 tauri dev",
     "generate:api": "openapi-typescript ./openapi/api.yaml -o ./src/lib/api/schema.d.ts",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -19,13 +21,15 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@appulsauce/svelte-grid": "^2.0.2",
     "@observablehq/plot": "^0.6.16",
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-opener": "^2",
+    "@tauri-apps/plugin-process": "^2.3.1",
+    "@tauri-apps/plugin-updater": "^2.9.0",
     "d3": "^7.9.0",
     "effect": "^3.19.14",
     "openapi-fetch": "^0.13.5",
-    "svelte-dnd-action": "^0.9.69",
     "ts-pattern": "^5.9.0"
   },
   "devDependencies": {

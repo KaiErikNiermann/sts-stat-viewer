@@ -1,5 +1,7 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { isDarkMode } from '$lib/stores/theme';
+  import { createDebouncedResizeObserver } from '$lib/utils';
 
   export type ItemTableMode = 'relics' | 'cards';
 
@@ -12,11 +14,13 @@
   interface Props {
     data: ItemStat[];
     title?: string;
-    height?: number;
     mode?: ItemTableMode;
   }
 
-  let { data, title, height = 400, mode = 'relics' }: Props = $props();
+  let { data, title, mode = 'relics' }: Props = $props();
+
+  let wrapper: HTMLDivElement;
+  let containerHeight = $state(350);
 
   // Sort by average floor descending
   let sortField = $state<'avgFloor' | 'count'>('avgFloor');
@@ -57,18 +61,37 @@
   // Dynamic labels based on mode
   let itemLabel = $derived(mode === 'cards' ? 'Card' : 'Relic');
   let emptyMessage = $derived(mode === 'cards' ? 'No card data available' : 'No relic data available');
+
+  // Calculate available height for table (subtract title and padding)
+  let tableHeight = $derived(Math.max(100, containerHeight - (title ? 52 : 16)));
+
+  onMount(() => {
+    let cleanup: (() => void) | undefined;
+    
+    if (wrapper) {
+      cleanup = createDebouncedResizeObserver(wrapper, ({ height }) => {
+        containerHeight = height;
+      }, { debounceMs: 150 });
+    }
+
+    return () => {
+      cleanup?.();
+    };
+  });
 </script>
 
-<div class="item-table">
+<div class="item-table" bind:this={wrapper}>
   {#if title}
-    <h3 class="text-lg font-semibold mb-2 plot-title">{title}</h3>
+    <h3 class="plot-title mb-2">{title}</h3>
   {/if}
   
   <div 
     class="table-container overflow-auto rounded-lg border"
     class:border-slate-700={$isDarkMode}
     class:border-slate-300={!$isDarkMode}
-    style:max-height="{height}px"
+    style:height="{tableHeight}px"
+    onpointerdown={(e) => e.stopPropagation()}
+    onwheel={(e) => e.stopPropagation()}
   >
     <table class="w-full text-sm">
       <thead class="sticky top-0 z-10">
@@ -154,26 +177,27 @@
 
 <style>
   .item-table {
-    padding: 1rem;
+    padding: 0.75rem;
     border-radius: 0.5rem;
-  }
-
-  :global(.dark) .item-table {
-    background: rgba(30, 41, 59, 0.5);
-    border: 1px solid rgba(71, 85, 105, 0.5);
-  }
-
-  :global(.light) .item-table {
-    background: rgba(255, 255, 255, 0.8);
-    border: 1px solid rgba(203, 213, 225, 0.8);
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
   }
 
   .plot-title {
     color: #e2e8f0;
+    flex-shrink: 0;
   }
 
   :global(.light) .plot-title {
     color: #1e293b;
+  }
+
+  .table-container {
+    flex: 1;
+    min-height: 0;
   }
 
   .table-container::-webkit-scrollbar {

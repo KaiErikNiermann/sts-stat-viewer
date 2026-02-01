@@ -9,7 +9,7 @@
 
 import createClient, { type Middleware } from 'openapi-fetch';
 import { Effect, Either } from 'effect';
-import { match, P } from 'ts-pattern';
+import { match } from 'ts-pattern';
 import type { paths, components } from './schema';
 
 // ============================================================================
@@ -92,6 +92,28 @@ const loggingMiddleware: Middleware = {
 const client = createClient<paths>({ baseUrl: API_BASE_URL });
 client.use(loggingMiddleware);
 
+// Helper to safely extract data from openapi-fetch responses
+const getDataOrThrow = <T>(result: { data?: T; response: Response }, context: string): T => {
+  if (!result.response.ok) {
+    throw networkError(`HTTP ${result.response.status}: ${result.response.statusText}`, result);
+  }
+  if (result.data === undefined || result.data === null) {
+    throw unexpectedError(`No data returned from ${context}`);
+  }
+  return result.data;
+};
+
+const getDataOrThrowWithError = <T, TError>(
+  result: { data?: T; error?: TError; response: Response },
+  context: string
+): T => {
+  const maybeError = (result as { error?: TError }).error;
+  if (maybeError) {
+    throw apiRequestError(maybeError as unknown as ApiError, result.response.status);
+  }
+  return getDataOrThrow(result, context);
+};
+
 // ============================================================================
 // Effect-TS API Wrapper
 // ============================================================================
@@ -103,10 +125,8 @@ export const effectApi = {
   healthCheck: () =>
     Effect.tryPromise({
       try: async () => {
-        const { data, error, response } = await client.GET('/api/health');
-        if (error) throw apiRequestError(error as ApiError, response.status);
-        if (!data) throw unexpectedError('No data returned from health check');
-        return data;
+        const result = await client.GET('/api/health');
+        return getDataOrThrow(result, 'health check');
       },
       catch: (error) =>
         error instanceof Object && '_tag' in error
@@ -120,10 +140,8 @@ export const effectApi = {
   getCharacters: () =>
     Effect.tryPromise({
       try: async () => {
-        const { data, error, response } = await client.GET('/api/characters');
-        if (error) throw apiRequestError(error as ApiError, response.status);
-        if (!data) throw unexpectedError('No data returned');
-        return data;
+        const result = await client.GET('/api/characters');
+        return getDataOrThrow(result, 'characters');
       },
       catch: (error) =>
         error instanceof Object && '_tag' in error
@@ -137,12 +155,10 @@ export const effectApi = {
   getRuns: (params?: { character?: string; victories_only?: boolean; min_ascension?: number }) =>
     Effect.tryPromise({
       try: async () => {
-        const { data, error, response } = await client.GET('/api/runs', {
-          params: { query: params },
-        });
-        if (error) throw apiRequestError(error as ApiError, response.status);
-        if (!data) throw unexpectedError('No data returned');
-        return data;
+        const result = params
+          ? await client.GET('/api/runs', { params: { query: params } })
+          : await client.GET('/api/runs');
+        return getDataOrThrow(result, 'runs');
       },
       catch: (error) =>
         error instanceof Object && '_tag' in error
@@ -156,12 +172,10 @@ export const effectApi = {
   getCharacterRuns: (character: CharacterId) =>
     Effect.tryPromise({
       try: async () => {
-        const { data, error, response } = await client.GET('/api/runs/{character}', {
+        const result = await client.GET('/api/runs/{character}', {
           params: { path: { character } },
         });
-        if (error) throw apiRequestError(error as ApiError, response.status);
-        if (!data) throw unexpectedError('No data returned');
-        return data;
+        return getDataOrThrowWithError(result, `runs for ${character}`);
       },
       catch: (error) =>
         error instanceof Object && '_tag' in error
@@ -175,10 +189,8 @@ export const effectApi = {
   getStats: () =>
     Effect.tryPromise({
       try: async () => {
-        const { data, error, response } = await client.GET('/api/stats');
-        if (error) throw apiRequestError(error as ApiError, response.status);
-        if (!data) throw unexpectedError('No data returned');
-        return data;
+        const result = await client.GET('/api/stats');
+        return getDataOrThrow(result, 'stats');
       },
       catch: (error) =>
         error instanceof Object && '_tag' in error
@@ -192,12 +204,10 @@ export const effectApi = {
   getCharacterStats: (character: CharacterId) =>
     Effect.tryPromise({
       try: async () => {
-        const { data, error, response } = await client.GET('/api/stats/{character}', {
+        const result = await client.GET('/api/stats/{character}', {
           params: { path: { character } },
         });
-        if (error) throw apiRequestError(error as ApiError, response.status);
-        if (!data) throw unexpectedError('No data returned');
-        return data;
+        return getDataOrThrowWithError(result, `stats for ${character}`);
       },
       catch: (error) =>
         error instanceof Object && '_tag' in error
@@ -211,10 +221,8 @@ export const effectApi = {
   getExport: () =>
     Effect.tryPromise({
       try: async () => {
-        const { data, error, response } = await client.GET('/api/export');
-        if (error) throw apiRequestError(error as ApiError, response.status);
-        if (!data) throw unexpectedError('No data returned');
-        return data;
+        const result = await client.GET('/api/export');
+        return getDataOrThrow(result, 'export data');
       },
       catch: (error) =>
         error instanceof Object && '_tag' in error

@@ -3,6 +3,7 @@
   import { onMount } from 'svelte';
   import type { PlotOptions } from './types';
   import { isDarkMode } from '$lib/stores/theme';
+  import { createDebouncedResizeObserver, calculatePlotDimensions, calculateTickCount } from '$lib/utils';
 
   interface DotPlotData {
     category: string;
@@ -27,25 +28,34 @@
   }: Props = $props();
 
   let container: HTMLDivElement;
+  let wrapper: HTMLDivElement;
+  let containerWidth = $state(600);
+  let containerHeight = $state(350);
 
   function renderPlot() {
     if (!container || !data.length) return;
     
     container.innerHTML = '';
 
+    const { width: plotWidth, height: plotHeight } = calculatePlotDimensions(
+      containerWidth, containerHeight, { hasTitle: !!title }
+    );
+    
+    const xTicks = calculateTickCount(plotWidth);
+
     const plot = Plot.plot({
-      width: options.width ?? 600,
-      height: options.height ?? Math.max(300, data.length * 30),
-      marginTop: options.marginTop ?? 40,
-      marginRight: options.marginRight ?? 20,
-      marginBottom: options.marginBottom ?? 50,
-      marginLeft: options.marginLeft ?? 120,
+      width: options.width ?? plotWidth,
+      height: options.height ?? Math.min(plotHeight, Math.max(150, data.length * 25)),
+      marginTop: options.marginTop ?? 30,
+      marginRight: options.marginRight ?? 15,
+      marginBottom: options.marginBottom ?? 45,
+      marginLeft: options.marginLeft ?? 100,
       style: {
         background: 'transparent',
         color: $isDarkMode ? '#e2e8f0' : '#1e293b',
-        fontSize: '12px',
+        fontSize: '11px',
       },
-      x: { label: xLabel, grid: true },
+      x: { label: xLabel, grid: true, ticks: xTicks },
       y: { label: yLabel },
       marks: [
         Plot.dot(data, {
@@ -64,8 +74,19 @@
   }
 
   onMount(() => {
+    let cleanup: (() => void) | undefined;
+    
+    if (wrapper) {
+      cleanup = createDebouncedResizeObserver(wrapper, ({ width, height }) => {
+        containerWidth = width;
+        containerHeight = height;
+      }, { debounceMs: 150 });
+    }
+
     renderPlot();
+
     return () => {
+      cleanup?.();
       if (container) container.innerHTML = '';
     };
   });
@@ -73,35 +94,41 @@
   $effect(() => {
     data;
     $isDarkMode;
+    containerWidth;
+    containerHeight;
     renderPlot();
   });
 </script>
 
-<div class="dot-plot">
+<div class="dot-plot" bind:this={wrapper}>
   {#if title}
-    <h3 class="text-lg font-semibold mb-2 plot-title">{title}</h3>
+    <h3 class="plot-title mb-1">{title}</h3>
   {/if}
-  <div bind:this={container} class="plot-container flex justify-center"></div>
+  <div bind:this={container} class="plot-container"></div>
 </div>
 
 <style>
   .dot-plot {
-    padding: 1rem;
+    padding: 0.75rem;
     border-radius: 0.5rem;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
   }
   
-  :global(.dark) .dot-plot {
-    background: rgba(30, 41, 59, 0.5);
-    border: 1px solid rgba(71, 85, 105, 0.5);
-  }
-  
-  :global(.light) .dot-plot {
-    background: rgba(255, 255, 255, 0.8);
-    border: 1px solid rgba(203, 213, 225, 0.8);
+  .plot-container {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .plot-title {
     color: #e2e8f0;
+    flex-shrink: 0;
   }
   
   :global(.light) .plot-title {
@@ -110,5 +137,7 @@
   
   .plot-container :global(svg) {
     display: block;
+    max-width: 100%;
+    max-height: 100%;
   }
 </style>

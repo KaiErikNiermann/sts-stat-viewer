@@ -43,7 +43,5 @@ export type {
   paths,
   components,
   HealthResponse,
-  GreetRequest,
-  GreetResponse,
   ApiError,
 } from './client';

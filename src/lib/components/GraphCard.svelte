@@ -162,7 +162,7 @@
   <div class="absolute top-2 right-2 z-10 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
     <!-- Edit button -->
     <button
-      class="p-1.5 rounded-md"
+      class="icon-btn icon-btn-sm"
       class:bg-slate-700={$isDarkMode}
       class:hover:bg-blue-600={$isDarkMode}
       class:bg-slate-200={!$isDarkMode}
@@ -181,7 +181,7 @@
 
     <!-- Delete button -->
     <button
-      class="p-1.5 rounded-md"
+      class="icon-btn icon-btn-sm"
       class:bg-slate-700={$isDarkMode}
       class:hover:bg-red-600={$isDarkMode}
       class:bg-slate-200={!$isDarkMode}
@@ -210,13 +210,13 @@
         </p>
         <div class="flex gap-2 justify-center">
           <button
-            class="px-3 py-1.5 text-sm rounded-md bg-red-600 hover:bg-red-500 text-white"
+            class="btn btn-sm btn-danger"
             onclick={() => { onDelete(); showDeleteConfirm = false; }}
           >
             Delete
           </button>
           <button
-            class="px-3 py-1.5 text-sm rounded-md"
+            class="btn btn-sm"
             class:bg-slate-700={$isDarkMode}
             class:hover:bg-slate-600={$isDarkMode}
             class:text-slate-200={$isDarkMode}
@@ -298,14 +298,12 @@
     <ItemTable
       data={getItemTableData('relics')}
       title={config.title}
-      height={350}
       mode="relics"
     />
   {:else if config.type === 'card-table'}
     <ItemTable
       data={getItemTableData('cards')}
       title={config.title}
-      height={350}
       mode="cards"
     />
   {/if}
@@ -323,10 +321,8 @@
 <style>
   .graph-card {
     position: relative;
-    cursor: grab;
-  }
-  
-  .graph-card:active {
-    cursor: grabbing;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
   }
 </style>

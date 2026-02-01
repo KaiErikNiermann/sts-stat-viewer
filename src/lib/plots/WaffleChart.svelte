@@ -3,6 +3,7 @@
   import { onMount } from 'svelte';
   import type { PlotOptions } from './types';
   import { isDarkMode } from '$lib/stores/theme';
+  import { createDebouncedResizeObserver, calculatePlotDimensions, calculateTickCount } from '$lib/utils';
 
   export interface WaffleData {
     category: string;
@@ -25,6 +26,9 @@
   }: Props = $props();
 
   let container: HTMLDivElement;
+  let wrapper: HTMLDivElement;
+  let containerWidth = $state(350);
+  let containerHeight = $state(300);
 
   function renderPlot() {
     if (!container || !data.length) return;
@@ -42,21 +46,29 @@
       '#84cc16', // lime
     ];
 
+    // WaffleChart needs extra space for summary stats below
+    const { width: plotWidth, height: plotHeight } = calculatePlotDimensions(
+      containerWidth, containerHeight, { hasTitle: !!title, titleHeight: 60, padding: 16 }
+    );
+    
+    const yTicks = calculateTickCount(plotHeight);
+
     const plot = Plot.plot({
-      width: options.width ?? 350,
-      height: options.height ?? 300,
-      marginTop: options.marginTop ?? 20,
-      marginRight: options.marginRight ?? 40,
-      marginBottom: options.marginBottom ?? 60,
-      marginLeft: options.marginLeft ?? 40,
+      width: options.width ?? plotWidth,
+      height: options.height ?? Math.max(100, plotHeight - 40),
+      marginTop: options.marginTop ?? 15,
+      marginRight: options.marginRight ?? 30,
+      marginBottom: options.marginBottom ?? 50,
+      marginLeft: options.marginLeft ?? 50,
       style: {
         background: 'transparent',
         color: $isDarkMode ? '#e2e8f0' : '#1e293b',
-        fontSize: '12px',
+        fontSize: '11px',
       },
       y: { 
         label: 'Count',
         tickFormat: (d: number) => String(Math.round(d)),
+        ticks: yTicks,
       },
       color: {
         domain: data.map(d => d.category),
@@ -79,8 +91,19 @@
   }
 
   onMount(() => {
+    let cleanup: (() => void) | undefined;
+    
+    if (wrapper) {
+      cleanup = createDebouncedResizeObserver(wrapper, ({ width, height }) => {
+        containerWidth = width;
+        containerHeight = height;
+      }, { debounceMs: 150 });
+    }
+
     renderPlot();
+
     return () => {
+      cleanup?.();
       if (container) container.innerHTML = '';
     };
   });
@@ -89,23 +112,23 @@
     data;
     options;
     $isDarkMode;
+    containerWidth;
+    containerHeight;
     renderPlot();
   });
 </script>
 
-<div class="plot-container rounded-lg p-4" class:bg-slate-800={$isDarkMode} class:bg-white={!$isDarkMode}>
+<div class="waffle-chart" bind:this={wrapper}>
   {#if title}
-    <h3 class="text-sm font-medium mb-2 text-center" class:text-slate-200={$isDarkMode} class:text-slate-700={!$isDarkMode}>
-      {title}
-    </h3>
+    <h3 class="plot-title mb-1">{title}</h3>
   {/if}
-  <div bind:this={container} class="flex justify-center"></div>
+  <div bind:this={container} class="chart-container"></div>
   <!-- Summary stats below the chart -->
   {#if data.length > 0}
     {@const total = data.reduce((sum, d) => sum + d.value, 0)}
-    <div class="mt-2 text-xs text-center space-y-1" class:text-slate-400={$isDarkMode} class:text-slate-500={!$isDarkMode}>
+    <div class="summary-stats">
       <p>Each square = {unit} run{unit > 1 ? 's' : ''} · Total: {total} runs</p>
-      <div class="flex flex-wrap justify-center gap-x-4 gap-y-1">
+      <div class="stats-row">
         {#each data as d}
           <span>
             <span class="font-medium" style="color: {d.color ?? '#888'}">{d.category}:</span>
@@ -118,7 +141,56 @@
 </div>
 
 <style>
-  .plot-container {
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+  .waffle-chart {
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .chart-container {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .plot-title {
+    color: #e2e8f0;
+    flex-shrink: 0;
+  }
+  
+  :global(.light) .plot-title {
+    color: #1e293b;
+  }
+  
+  .summary-stats {
+    margin-top: 0.5rem;
+    text-align: center;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    flex-shrink: 0;
+  }
+  
+  :global(.light) .summary-stats {
+    color: #64748b;
+  }
+  
+  .stats-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.25rem 1rem;
+    margin-top: 0.25rem;
+  }
+  
+  .chart-container :global(svg) {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
   }
 </style>

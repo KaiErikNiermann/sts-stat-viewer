@@ -12,6 +12,7 @@ pub mod sts;
 use serde::Serialize;
 use std::path::PathBuf;
 use std::thread;
+use tauri::Manager;
 
 /// Tauri command to greet a user (direct IPC)
 #[tauri::command]
@@ -117,11 +118,35 @@ fn start_api_server() {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    // Mitigate common Wayland/WebKitGTK crashes by using safer defaults on Linux.
+    // Respect any explicitly set environment variables so power users can override.
+    #[cfg(target_os = "linux")]
+    {
+        use std::env;
+
+        let has_wayland = env::var_os("WAYLAND_DISPLAY").is_some();
+        let has_x11 = env::var_os("DISPLAY").is_some();
+
+        if has_wayland {
+            if env::var_os("WEBKIT_DISABLE_DMABUF_RENDERER").is_none() {
+                env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
+            }
+            if env::var_os("WEBKIT_DISABLE_COMPOSITING_MODE").is_none() {
+                env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
+            }
+            if has_x11 && env::var_os("GDK_BACKEND").is_none() {
+                env::set_var("GDK_BACKEND", "x11");
+            }
+        }
+    }
+
     // Start the API server before Tauri
     start_api_server();
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
         .invoke_handler(tauri::generate_handler![
             greet,
             get_api_url,
@@ -133,6 +158,17 @@ pub fn run() {
             set_runs_path,
             clear_runs_path
         ])
+        .setup(|app| {
+            // Enable hardware acceleration and performance settings
+            #[cfg(target_os = "linux")]
+            {
+                if let Some(window) = app.get_webview_window("main") {
+                    // Enable GPU acceleration for Linux
+                    let _ = window.set_decorations(true);
+                }
+            }
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

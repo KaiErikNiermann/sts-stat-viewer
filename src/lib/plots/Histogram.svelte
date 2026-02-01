@@ -3,6 +3,7 @@
   import { onMount } from 'svelte';
   import type { HistogramData, PlotOptions } from './types';
   import { isDarkMode } from '$lib/stores/theme';
+  import { createDebouncedResizeObserver, calculatePlotDimensions, calculateTickCount } from '$lib/utils';
 
   // Boss floor markers
   const BOSS_FLOORS = [17, 34, 51, 57];
@@ -32,6 +33,9 @@
   }: Props = $props();
 
   let container: HTMLDivElement;
+  let wrapper: HTMLDivElement;
+  let containerWidth = $state(600);
+  let containerHeight = $state(350);
 
   // Calculate normal distribution curve points
   function generateNormalCurve(values: number[], binCount: number) {
@@ -76,20 +80,29 @@
     const values = data.map(d => d.value);
     const normalCurveData = showNormalCurve ? generateNormalCurve(values, bins) : [];
 
+    // Calculate plot dimensions based on container
+    const { width: plotWidth, height: plotHeight } = calculatePlotDimensions(
+      containerWidth, containerHeight, { hasTitle: !!title }
+    );
+    
+    // Dynamic tick counts based on size
+    const xTicks = calculateTickCount(plotWidth);
+    const yTicks = calculateTickCount(plotHeight);
+
     const plot = Plot.plot({
-      width: options.width ?? 600,
-      height: options.height ?? 400,
-      marginTop: options.marginTop ?? 40,
+      width: options.width ?? plotWidth,
+      height: options.height ?? plotHeight,
+      marginTop: options.marginTop ?? 30,
       marginRight: options.marginRight ?? 20,
-      marginBottom: options.marginBottom ?? 50,
-      marginLeft: options.marginLeft ?? 60,
+      marginBottom: options.marginBottom ?? 45,
+      marginLeft: options.marginLeft ?? 55,
       style: {
         background: 'transparent',
         color: $isDarkMode ? '#e2e8f0' : '#1e293b',
-        fontSize: '12px',
+        fontSize: '11px',
       },
-      x: { label: xLabel, grid: true },
-      y: { label: yLabel, grid: true },
+      x: { label: xLabel, grid: true, ticks: xTicks },
+      y: { label: yLabel, grid: true, ticks: yTicks },
       marks: [
         // Boss floor reference lines (vertical)
         ...(showXBossFloors ? BOSS_FLOORS.map(f => Plot.ruleX([f], {
@@ -120,8 +133,20 @@
   }
 
   onMount(() => {
+    // Set up debounced ResizeObserver to track container size
+    let cleanup: (() => void) | undefined;
+    
+    if (wrapper) {
+      cleanup = createDebouncedResizeObserver(wrapper, ({ width, height }) => {
+        containerWidth = width;
+        containerHeight = height;
+      }, { debounceMs: 150 });
+    }
+
     renderPlot();
+
     return () => {
+      cleanup?.();
       if (container) container.innerHTML = '';
     };
   });
@@ -131,35 +156,41 @@
     bins;
     showNormalCurve;
     $isDarkMode;
+    containerWidth;
+    containerHeight;
     renderPlot();
   });
 </script>
 
-<div class="histogram">
+<div class="histogram" bind:this={wrapper}>
   {#if title}
-    <h3 class="text-lg font-semibold mb-2 plot-title">{title}</h3>
+    <h3 class="plot-title mb-1">{title}</h3>
   {/if}
-  <div bind:this={container} class="plot-container flex justify-center"></div>
+  <div bind:this={container} class="plot-container"></div>
 </div>
 
 <style>
   .histogram {
-    padding: 1rem;
+    padding: 0.75rem;
     border-radius: 0.5rem;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
   }
   
-  :global(.dark) .histogram {
-    background: rgba(30, 41, 59, 0.5);
-    border: 1px solid rgba(71, 85, 105, 0.5);
-  }
-  
-  :global(.light) .histogram {
-    background: rgba(255, 255, 255, 0.8);
-    border: 1px solid rgba(203, 213, 225, 0.8);
+  .plot-container {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .plot-title {
     color: #e2e8f0;
+    flex-shrink: 0;
   }
   
   :global(.light) .plot-title {
@@ -168,5 +199,7 @@
   
   .plot-container :global(svg) {
     display: block;
+    max-width: 100%;
+    max-height: 100%;
   }
 </style>

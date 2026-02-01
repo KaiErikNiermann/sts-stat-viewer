@@ -358,7 +358,7 @@ fn parse_run_file(path: &std::path::Path, character: &str) -> Option<RunMetrics>
         upgraded_cards: master_deck.iter().filter(|c| c.contains('+')).count() as i32,
         cards_removed: raw.items_purged.map(|v| v.len()).unwrap_or(0) as i32,
         relic_count: relics.len() as i32,
-        relics: relics,
+        relics,
         master_deck: master_deck.clone(),
         elites_killed: path_per_floor
             .iter()
