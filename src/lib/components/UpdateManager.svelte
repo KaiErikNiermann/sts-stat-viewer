@@ -138,8 +138,14 @@
     // since the updater's version check would block older versions
     const release = availableVersions.find(r => r.tag_name === version || r.tag_name === `v${version}`);
     if (release) {
-      const { open } = await import('@tauri-apps/plugin-opener');
-      await open(release.html_url);
+      try {
+        const { openUrl } = await import('@tauri-apps/plugin-opener');
+        await openUrl(release.html_url);
+      } catch (e) {
+        console.error('Failed to open release page:', e);
+        // Fallback: copy URL to clipboard or show it
+        error = `Could not open browser. Visit: ${release.html_url}`;
+      }
     }
     showDropdown = false;
   }
