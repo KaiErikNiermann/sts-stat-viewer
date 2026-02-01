@@ -44,13 +44,13 @@ importers:
         version: 1.58.1
       '@sveltejs/adapter-static':
         specifier: ^3.0.6
-        version: 3.0.10(@sveltejs/kit@2.50.0(@sveltejs/vite-plugin-svelte@5.1.1(svelte@5.49.1)(vite@6.4.1(jiti@1.21.7)))(svelte@5.49.1)(typescript@5.9.3)(vite@6.4.1(jiti@1.21.7)))
+        version: 3.0.10(@sveltejs/kit@2.50.0(@sveltejs/vite-plugin-svelte@6.2.4(svelte@5.49.1)(vite@6.4.1(jiti@1.21.7)))(svelte@5.49.1)(typescript@5.9.3)(vite@6.4.1(jiti@1.21.7)))
       '@sveltejs/kit':
         specifier: ^2.50.0
-        version: 2.50.0(@sveltejs/vite-plugin-svelte@5.1.1(svelte@5.49.1)(vite@6.4.1(jiti@1.21.7)))(svelte@5.49.1)(typescript@5.9.3)(vite@6.4.1(jiti@1.21.7))
+        version: 2.50.0(@sveltejs/vite-plugin-svelte@6.2.4(svelte@5.49.1)(vite@6.4.1(jiti@1.21.7)))(svelte@5.49.1)(typescript@5.9.3)(vite@6.4.1(jiti@1.21.7))
       '@sveltejs/vite-plugin-svelte':
-        specifier: ^5.0.0
-        version: 5.1.1(svelte@5.49.1)(vite@6.4.1(jiti@1.21.7))
+        specifier: ^6.2.4
+        version: 6.2.4(svelte@5.49.1)(vite@6.4.1(jiti@1.21.7))
       '@tauri-apps/cli':
         specifier: ^2
         version: 2.9.6
@@ -2469,15 +2469,15 @@ snapshots:
     dependencies:
       acorn: 8.15.0
 
-  '@sveltejs/adapter-static@3.0.10(@sveltejs/kit@2.50.0(@sveltejs/vite-plugin-svelte@5.1.1(svelte@5.49.1)(vite@6.4.1(jiti@1.21.7)))(svelte@5.49.1)(typescript@5.9.3)(vite@6.4.1(jiti@1.21.7)))':
+  '@sveltejs/adapter-static@3.0.10(@sveltejs/kit@2.50.0(@sveltejs/vite-plugin-svelte@6.2.4(svelte@5.49.1)(vite@6.4.1(jiti@1.21.7)))(svelte@5.49.1)(typescript@5.9.3)(vite@6.4.1(jiti@1.21.7)))':
     dependencies:
-      '@sveltejs/kit': 2.50.0(@sveltejs/vite-plugin-svelte@5.1.1(svelte@5.49.1)(vite@6.4.1(jiti@1.21.7)))(svelte@5.49.1)(typescript@5.9.3)(vite@6.4.1(jiti@1.21.7))
+      '@sveltejs/kit': 2.50.0(@sveltejs/vite-plugin-svelte@6.2.4(svelte@5.49.1)(vite@6.4.1(jiti@1.21.7)))(svelte@5.49.1)(typescript@5.9.3)(vite@6.4.1(jiti@1.21.7))
 
-  '@sveltejs/kit@2.50.0(@sveltejs/vite-plugin-svelte@5.1.1(svelte@5.49.1)(vite@6.4.1(jiti@1.21.7)))(svelte@5.49.1)(typescript@5.9.3)(vite@6.4.1(jiti@1.21.7))':
+  '@sveltejs/kit@2.50.0(@sveltejs/vite-plugin-svelte@6.2.4(svelte@5.49.1)(vite@6.4.1(jiti@1.21.7)))(svelte@5.49.1)(typescript@5.9.3)(vite@6.4.1(jiti@1.21.7))':
     dependencies:
       '@standard-schema/spec': 1.1.0
       '@sveltejs/acorn-typescript': 1.0.8(acorn@8.15.0)
-      '@sveltejs/vite-plugin-svelte': 5.1.1(svelte@5.49.1)(vite@6.4.1(jiti@1.21.7))
+      '@sveltejs/vite-plugin-svelte': 6.2.4(svelte@5.49.1)(vite@6.4.1(jiti@1.21.7))
       '@types/cookie': 0.6.0
       acorn: 8.15.0
       cookie: 0.6.0
@@ -2494,19 +2494,19 @@ snapshots:
     optionalDependencies:
       typescript: 5.9.3
 
-  '@sveltejs/vite-plugin-svelte-inspector@4.0.1(@sveltejs/vite-plugin-svelte@5.1.1(svelte@5.49.1)(vite@6.4.1(jiti@1.21.7)))(svelte@5.49.1)(vite@6.4.1(jiti@1.21.7))':
+  '@sveltejs/vite-plugin-svelte-inspector@5.0.2(@sveltejs/vite-plugin-svelte@6.2.4(svelte@5.49.1)(vite@6.4.1(jiti@1.21.7)))(svelte@5.49.1)(vite@6.4.1(jiti@1.21.7))':
     dependencies:
-      '@sveltejs/vite-plugin-svelte': 5.1.1(svelte@5.49.1)(vite@6.4.1(jiti@1.21.7))
-      debug: 4.4.3(supports-color@10.2.2)
+      '@sveltejs/vite-plugin-svelte': 6.2.4(svelte@5.49.1)(vite@6.4.1(jiti@1.21.7))
+      obug: 2.1.1
       svelte: 5.49.1
       vite: 6.4.1(jiti@1.21.7)
 
-  '@sveltejs/vite-plugin-svelte@5.1.1(svelte@5.49.1)(vite@6.4.1(jiti@1.21.7))':
+  '@sveltejs/vite-plugin-svelte@6.2.4(svelte@5.49.1)(vite@6.4.1(jiti@1.21.7))':
     dependencies:
-      '@sveltejs/vite-plugin-svelte-inspector': 4.0.1(@sveltejs/vite-plugin-svelte@5.1.1(svelte@5.49.1)(vite@6.4.1(jiti@1.21.7)))(svelte@5.49.1)(vite@6.4.1(jiti@1.21.7))
-      debug: 4.4.3(supports-color@10.2.2)
+      '@sveltejs/vite-plugin-svelte-inspector': 5.0.2(@sveltejs/vite-plugin-svelte@6.2.4(svelte@5.49.1)(vite@6.4.1(jiti@1.21.7)))(svelte@5.49.1)(vite@6.4.1(jiti@1.21.7))
       deepmerge: 4.3.1
       magic-string: 0.30.21
+      obug: 2.1.1
       svelte: 5.49.1
       vite: 6.4.1(jiti@1.21.7)
       vitefu: 1.1.1(vite@6.4.1(jiti@1.21.7))
