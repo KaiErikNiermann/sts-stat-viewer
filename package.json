@@ -40,7 +40,7 @@
     "@tauri-apps/cli": "^2",
     "@types/d3": "^7.4.3",
     "@vitest/coverage-v8": "^2.1.8",
-    "autoprefixer": "^10.4.20",
+    "autoprefixer": "^10.4.24",
     "jsdom": "^27.4.0",
     "openapi-typescript": "^7.4.4",
     "postcss": "^8.4.49",
