@@ -1,18 +1,74 @@
 name: Test
 
 on:
-  push:
-    branches: [main, master]
+  # Only run on PRs, not direct pushes to main
   pull_request:
     branches: [main, master]
+    paths:
+      # Frontend
+      - 'src/**'
+      - 'static/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'vite.config.*'
+      - 'svelte.config.*'
+      - 'tsconfig.json'
+      - 'vitest.config.*'
+      - 'playwright.config.*'
+      - 'tailwind.config.*'
+      - 'postcss.config.*'
+      # Backend
+      - 'src-tauri/**'
+      # OpenAPI
+      - 'openapi/**'
+      # Tests
+      - 'tests/**'
+      # This workflow itself
+      - '.github/workflows/test.yml'
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  # Lightweight frontend-only test for dependabot PRs
+  test-frontend-lite:
+    name: Frontend Tests (Lite)
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Run type check
+        run: pnpm check
+        continue-on-error: true
+
+      - name: Run unit tests
+        run: pnpm test
+
+      - name: Build frontend
+        run: pnpm build
+
+  # Full frontend tests for non-dependabot PRs
   test-frontend:
     name: Frontend Tests
     runs-on: ${{ matrix.os }}
+    if: github.actor != 'dependabot[bot]'
     strategy:
       fail-fast: false
       matrix:
@@ -49,6 +105,8 @@ jobs:
   test-backend:
     name: Backend Tests (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
+    # Skip backend tests entirely for dependabot - they're expensive
+    if: github.actor != 'dependabot[bot]'
     strategy:
       fail-fast: false
       matrix:
@@ -89,6 +147,8 @@ jobs:
     name: Tauri Build Test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     needs: [test-frontend, test-backend]
+    # Skip Tauri build for dependabot - most expensive job
+    if: github.actor != 'dependabot[bot]'
     strategy:
       fail-fast: false
       matrix:

@@ -19,14 +19,26 @@
   let updateStatus = $state<string | null>(null);
   let error = $state<string | null>(null);
   let showDropdown = $state(false);
+  let dropdownEl: HTMLDivElement | null = null;
+  let dropdownButtonEl: HTMLButtonElement | null = null;
 
   // Check if running in Tauri
   let isTauri = $state(false);
 
   onMount(async () => {
-    // Check if we're in Tauri environment
-    if (typeof window !== 'undefined' && '__TAURI__' in window) {
+    // Check if we're in Tauri environment (withGlobalTauri is false by default)
+    const hasTauriGlobals =
+      typeof window !== 'undefined' &&
+      ('__TAURI_INTERNALS__' in window || '__TAURI__' in window);
+
+    if (hasTauriGlobals) {
       isTauri = true;
+      try {
+        const { getVersion } = await import('@tauri-apps/api/app');
+        currentVersion = await getVersion();
+      } catch (e) {
+        console.warn('Failed to get app version:', e);
+      }
       await loadVersions();
     }
   });
@@ -139,9 +151,20 @@
     }
   }
 
+  function handleWindowClick(event: MouseEvent) {
+    if (!showDropdown) return;
+    const target = event.target as Node | null;
+    if (!target) return;
+    if (dropdownEl?.contains(target)) return;
+    if (dropdownButtonEl?.contains(target)) return;
+    showDropdown = false;
+  }
+
   // Check if update is available
   let hasUpdate = $derived(latestVersion && latestVersion !== currentVersion && latestVersion > currentVersion);
 </script>
+
+<svelte:window on:click={handleWindowClick} />
 
 {#if isTauri}
   <div class="update-manager flex items-center gap-2">
@@ -179,6 +202,7 @@
     <!-- Downgrade dropdown -->
     <div class="relative">
       <button
+        bind:this={dropdownButtonEl}
         class="downgrade-btn"
         class:bg-slate-700={$isDarkMode}
         class:hover:bg-slate-600={$isDarkMode}
@@ -194,7 +218,8 @@
       </button>
 
       {#if showDropdown}
-        <div 
+        <div
+          bind:this={dropdownEl}
           class="dropdown-menu"
           class:bg-slate-800={$isDarkMode}
           class:border-slate-700={$isDarkMode}
