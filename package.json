@@ -1,6 +1,6 @@
 {
   "name": "sts-stat-viewer",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Slay the Spire Statistics Viewer - Analyze your runs with beautiful visualizations",
   "type": "module",
   "scripts": {

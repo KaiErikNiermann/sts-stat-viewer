@@ -1,6 +1,6 @@
 [package]
 name = "sts-stat-viewer"
-version = "0.1.0"
+undefined
 description = "Slay the Spire Statistics Viewer - Analyze your runs"
 authors = ["you"]
 edition = "2021"
