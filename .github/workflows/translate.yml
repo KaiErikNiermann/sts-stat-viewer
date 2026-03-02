@@ -1,0 +1,114 @@
+name: Generate Translations
+
+on:
+  workflow_dispatch:
+    inputs:
+      locales:
+        description: 'Comma-separated BCP-47 locale codes (e.g. "de,fr,ja") or "all"'
+        required: true
+        default: 'all'
+        type: string
+      namespace:
+        description: 'Specific namespace to translate (leave empty for all)'
+        required: false
+        type: string
+      formality:
+        description: 'DeepL formality setting'
+        required: false
+        default: 'default'
+        type: choice
+        options:
+          - default
+          - more
+          - less
+          - prefer_more
+          - prefer_less
+      dry_run:
+        description: 'Dry run (no API calls, no file writes)'
+        required: false
+        default: false
+        type: boolean
+
+# Prevent concurrent translation runs
+concurrency:
+  group: translation-generation
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    name: Generate DeepL Translations
+    runs-on: ubuntu-latest
+    # SECURITY: Only run on the base repo, never on forks
+    if: github.repository == github.event.repository.full_name
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build translation args
+        id: args
+        run: |
+          ARGS=""
+          if [ "${{ inputs.locales }}" != "all" ]; then
+            ARGS="$ARGS --locale ${{ inputs.locales }}"
+          fi
+          if [ -n "${{ inputs.namespace }}" ]; then
+            ARGS="$ARGS --namespace ${{ inputs.namespace }}"
+          fi
+          if [ "${{ inputs.formality }}" != "default" ]; then
+            ARGS="$ARGS --formality ${{ inputs.formality }}"
+          fi
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          echo "args=$ARGS" >> $GITHUB_OUTPUT
+
+      - name: Run translation generation
+        run: pnpm i18n:translate ${{ steps.args.outputs.args }}
+        env:
+          DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
+
+      - name: Run i18n validation
+        if: inputs.dry_run != true
+        run: pnpm i18n:validate
+
+      - name: Generate diff summary
+        if: inputs.dry_run != true
+        run: |
+          echo "## Translation Diff Summary" > translation-diff.md
+          echo "" >> translation-diff.md
+          echo "**Locales:** ${{ inputs.locales }}" >> translation-diff.md
+          echo "**Formality:** ${{ inputs.formality }}" >> translation-diff.md
+          echo "" >> translation-diff.md
+          echo '```diff' >> translation-diff.md
+          git diff --stat -- 'src/lib/i18n/messages/' 'src/lib/i18n/meta/' >> translation-diff.md || echo "No changes" >> translation-diff.md
+          echo '```' >> translation-diff.md
+          echo "" >> translation-diff.md
+          echo "### Changed files:" >> translation-diff.md
+          git diff --name-only -- 'src/lib/i18n/' >> translation-diff.md || echo "None" >> translation-diff.md
+          cat translation-diff.md
+
+      - name: Upload translation diff artifact
+        if: inputs.dry_run != true
+        uses: actions/upload-artifact@v4
+        with:
+          name: translation-diff
+          path: |
+            translation-diff.md
+            src/lib/i18n/messages/
+            src/lib/i18n/meta/
+          retention-days: 30

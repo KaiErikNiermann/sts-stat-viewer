@@ -1,0 +1,19 @@
+{
+  "locale": "en",
+  "status": "source",
+  "human_review_coverage": 100,
+  "reviewed_by": null,
+  "reviewed_at": null,
+  "generated_by": null,
+  "generated_at": null,
+  "notes": "English is the source locale — all keys are authored by developers.",
+  "history": [
+    {
+      "action": "created",
+      "status": "source",
+      "by": "system",
+      "at": "2026-02-16T00:00:00Z",
+      "notes": "Initial English source locale."
+    }
+  ]
+}

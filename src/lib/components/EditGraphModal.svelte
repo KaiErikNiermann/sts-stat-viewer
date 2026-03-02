@@ -2,6 +2,7 @@
   import { untrack } from 'svelte';
   import { isDarkMode } from '$lib/stores/theme';
   import { PLOT_FIELDS, type GraphConfig, type PlotFieldKey, getFieldLabel } from '$lib/stores/graphs';
+  import { t } from '$lib/i18n';
 
   interface Props {
     config: GraphConfig;
@@ -97,17 +98,17 @@
 
   // Get friendly type name
   function getTypeName(type: string): string {
-    const names: Record<string, string> = {
-      'scatter': 'Scatter Plot',
-      'histogram': 'Histogram',
-      'regression': 'Regression Plot',
-      'density': 'Density Plot',
-      'survival': 'Survival Curve',
-      'boxplot': 'Box Plot',
-      'winrate-waffle': 'Win/Loss Waffle',
-      'bar': 'Bar Chart',
+    const names: Record<string, () => string> = {
+      'scatter': () => $t('graphs.type_scatter'),
+      'histogram': () => $t('graphs.type_histogram'),
+      'regression': () => $t('graphs.type_regression'),
+      'density': () => $t('graphs.type_density'),
+      'survival': () => $t('graphs.type_survival'),
+      'boxplot': () => $t('graphs.type_boxplot'),
+      'winrate-waffle': () => $t('graphs.type_waffle'),
+      'bar': () => $t('graphs.type_bar'),
     };
-    return names[type] ?? type;
+    return names[type]?.() ?? type;
   }
 </script>
 
@@ -126,7 +127,7 @@
     type="button"
     class="modal-overlay"
     onclick={onClose}
-    aria-label="Close modal"
+    aria-label={$t('common.close_modal')}
   ></button>
   
   <!-- Modal content -->
@@ -146,7 +147,7 @@
       class:hover:text-slate-700={!$isDarkMode}
       class:hover:bg-slate-100={!$isDarkMode}
       onclick={onClose}
-      aria-label="Close modal"
+      aria-label={$t('common.close_modal')}
     >
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -154,7 +155,7 @@
     </button>
 
     <h2 class="text-lg font-semibold mb-1" class:text-slate-100={$isDarkMode} class:text-slate-800={!$isDarkMode}>
-      Edit Graph
+      {$t('graphs.edit_graph_heading')}
     </h2>
     <p class="text-sm mb-4" class:text-slate-400={$isDarkMode} class:text-slate-500={!$isDarkMode}>
       {getTypeName(graphType)}
@@ -164,7 +165,7 @@
       <!-- Title -->
       <div>
         <label for="edit-title" class="form-label mb-1" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
-          Title
+          {$t('graphs.title_label')}
         </label>
         <input
           id="edit-title"
@@ -184,7 +185,7 @@
       {#if showXYFields || showXFieldOnly}
         <div>
           <label for="edit-x-field" class="form-label mb-1" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
-            {showXFieldOnly ? 'Value Field' : graphType === 'boxplot' ? 'Value Field' : 'X Axis Field'}
+            {showXFieldOnly ? $t('graphs.value_field') : graphType === 'boxplot' ? $t('graphs.value_field') : $t('graphs.x_axis_field')}
           </label>
           <select
             id="edit-x-field"
@@ -208,7 +209,7 @@
       {#if showXYFields}
         <div>
           <label for="edit-y-field" class="form-label mb-1" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
-            {graphType === 'boxplot' ? 'Group By Field' : 'Y Axis Field'}
+            {graphType === 'boxplot' ? $t('graphs.group_by_field') : $t('graphs.y_axis_field')}
           </label>
           <select
             id="edit-y-field"
@@ -232,7 +233,7 @@
       {#if showBinsOption}
         <div>
           <label for="edit-bins" class="form-label mb-1" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
-            Number of Bins
+            {$t('graphs.num_bins')}
           </label>
           <input
             id="edit-bins"
@@ -260,7 +261,7 @@
             class="form-checkbox"
           />
           <label for="edit-group-by-char" class="text-sm" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
-            Group by character
+            {$t('graphs.group_by_character')}
           </label>
         </div>
       {/if}
@@ -275,7 +276,7 @@
             class="form-checkbox"
           />
           <label for="edit-show-confidence" class="text-sm" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
-            Show 95% confidence interval
+            {$t('graphs.show_confidence')}
           </label>
         </div>
       {/if}
@@ -284,7 +285,7 @@
       {#if showBandwidthOption}
         <div>
           <label for="edit-bandwidth" class="form-label mb-1" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
-            Bandwidth (smoothing)
+            {$t('graphs.bandwidth_label')}
           </label>
           <input
             id="edit-bandwidth"
@@ -295,9 +296,9 @@
             class="w-full"
           />
           <div class="flex justify-between text-xs" class:text-slate-400={$isDarkMode} class:text-slate-500={!$isDarkMode}>
-            <span>5 (sharp)</span>
+            <span>{$t('graphs.bandwidth_sharp')}</span>
             <span class="font-medium">{bandwidth}</span>
-            <span>100 (smooth)</span>
+            <span>{$t('graphs.bandwidth_smooth')}</span>
           </div>
         </div>
       {/if}
@@ -312,7 +313,7 @@
             class="form-checkbox"
           />
           <label for="edit-boss-floors" class="text-sm" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
-            Show boss floor markers
+            {$t('graphs.show_boss_floors_short')}
           </label>
         </div>
       {/if}
@@ -327,7 +328,7 @@
             class="form-checkbox"
           />
           <label for="edit-normal-curve" class="text-sm" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
-            Show normal distribution curve
+            {$t('graphs.show_normal_curve')}
           </label>
         </div>
       {/if}
@@ -338,7 +339,7 @@
           type="submit"
           class="btn btn-md btn-primary flex-1"
         >
-          Save Changes
+          {$t('graphs.save_changes')}
         </button>
         <button
           type="button"
@@ -351,7 +352,7 @@
           class:hover:bg-slate-300={!$isDarkMode}
           class:text-slate-700={!$isDarkMode}
         >
-          Cancel
+          {$t('common.cancel')}
         </button>
       </div>
     </form>

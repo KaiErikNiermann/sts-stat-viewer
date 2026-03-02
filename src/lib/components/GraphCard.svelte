@@ -4,6 +4,7 @@
   import type { GraphConfig } from '$lib/stores/graphs';
   import type { RunMetrics } from '$lib/api/sts-client';
   import EditGraphModal from './EditGraphModal.svelte';
+  import { t } from '$lib/i18n';
 
   // Character colors for survival curves
   const CHARACTER_COLORS: Record<string, string> = {
@@ -115,8 +116,8 @@
     const wins = runs.filter(r => r.victory).length;
     const losses = runs.length - wins;
     return [
-      { category: 'Victories', value: wins, color: '#22c55e' },
-      { category: 'Defeats', value: losses, color: '#ef4444' },
+      { category: $t('graphs.victories'), value: wins, color: '#22c55e' },
+      { category: $t('graphs.defeats'), value: losses, color: '#ef4444' },
     ];
   }
 
@@ -171,7 +172,7 @@
       class:hover:text-white={$isDarkMode}
       class:text-slate-600={!$isDarkMode}
       onclick={() => showEditModal = true}
-      title="Edit graph"
+      title={$t('graphs.edit_graph_tooltip')}
     >
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -190,7 +191,7 @@
       class:hover:text-white={$isDarkMode}
       class:text-slate-600={!$isDarkMode}
       onclick={() => showDeleteConfirm = true}
-      title="Delete graph"
+      title={$t('graphs.delete_graph_tooltip')}
     >
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -206,14 +207,14 @@
     >
       <div class="text-center p-4">
         <p class="mb-3 text-sm" class:text-slate-200={$isDarkMode} class:text-slate-700={!$isDarkMode}>
-          Delete this graph?
+          {$t('graphs.delete_confirm')}
         </p>
         <div class="flex gap-2 justify-center">
           <button
             class="btn btn-sm btn-danger"
             onclick={() => { onDelete(); showDeleteConfirm = false; }}
           >
-            Delete
+            {$t('common.delete')}
           </button>
           <button
             class="btn btn-sm"
@@ -225,7 +226,7 @@
             class:text-slate-700={!$isDarkMode}
             onclick={() => showDeleteConfirm = false}
           >
-            Cancel
+            {$t('common.cancel')}
           </button>
         </div>
       </div>
@@ -256,8 +257,8 @@
     <LineChart
       data={getSurvivalData()}
       title={config.title}
-      xLabel="Floor"
-      yLabel="Survival %"
+      xLabel={$t('graphs.axis_floor')}
+      yLabel={$t('graphs.axis_survival_pct')}
       seriesColors={getSurvivalColors()}
       showXBossFloors={config.showBossFloors ?? false}
     />

@@ -1,6 +1,36 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-ironclad: #c62828;
+  --color-ironclad-light: #ff5f52;
+  --color-ironclad-dark: #8e0000;
+
+  --color-silent: #2e7d32;
+  --color-silent-light: #60ad5e;
+  --color-silent-dark: #005005;
+
+  --color-defect: #1565c0;
+  --color-defect-light: #5e92f3;
+  --color-defect-dark: #003c8f;
+
+  --color-watcher: #6a1b9a;
+  --color-watcher-light: #9c4dcc;
+  --color-watcher-dark: #38006b;
+
+  --color-bg-primary: #0f172a;
+  --color-bg-secondary: #1e293b;
+  --color-bg-tertiary: #334155;
+
+  --color-accent-success: #22c55e;
+  --color-accent-danger: #ef4444;
+  --color-accent-warning: #f59e0b;
+  --color-accent-info: #3b82f6;
+
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
 
 @layer components {
   .btn {

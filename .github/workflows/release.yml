@@ -42,6 +42,40 @@ jobs:
             echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
           fi
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Validate i18n integrity
+        run: pnpm i18n:validate
+
+      - name: Generate locale status summary
+        id: locale_summary
+        run: |
+          SUMMARY=""
+          for meta_file in src/lib/i18n/meta/*.json; do
+            if [ -f "$meta_file" ]; then
+              locale=$(basename "$meta_file" .json)
+              status=$(node -e "console.log(require('./$meta_file').status)")
+              coverage=$(node -e "console.log(require('./$meta_file').human_review_coverage)")
+              SUMMARY="${SUMMARY}\n- **${locale}**: ${status} (${coverage}% human-reviewed)"
+            fi
+          done
+          # Store for release notes (escaped for GH Actions)
+          echo "summary<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$SUMMARY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
       - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v2
@@ -51,6 +85,12 @@ jobs:
           draft: ${{ inputs.draft || true }}
           prerelease: false
           generate_release_notes: true
+          append_body: true
+          body: |
+
+            ---
+            ### Locale Status
+            ${{ steps.locale_summary.outputs.summary }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

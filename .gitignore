@@ -9,3 +9,7 @@ node_modules
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .claude
+.serena
+
+# Generated canonical STS term glossaries (extracted from local game assets)
+src/lib/i18n/canonical/

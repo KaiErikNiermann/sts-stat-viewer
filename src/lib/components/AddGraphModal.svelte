@@ -1,6 +1,7 @@
 <script lang="ts">
   import { isDarkMode } from '$lib/stores/theme';
   import { PLOT_FIELDS, type GraphConfig, type GraphType, type PlotFieldKey, getFieldLabel } from '$lib/stores/graphs';
+  import { t } from '$lib/i18n';
 
   interface Props {
     onAdd: (config: Omit<GraphConfig, 'id' | 'x' | 'y' | 'w' | 'h'>) => void;
@@ -27,23 +28,23 @@
   let autoTitle = $derived(() => {
     switch (graphType) {
       case 'histogram':
-        return `${getFieldLabel(xField)} Distribution`;
+        return $t('graphs.auto_title_distribution', { field: getFieldLabel(xField) });
       case 'survival':
-        return groupByCharacter ? 'Survival Rate by Character' : 'Overall Survival Rate';
+        return groupByCharacter ? $t('graphs.auto_title_survival_grouped') : $t('graphs.auto_title_survival_overall');
       case 'boxplot':
-        return `${getFieldLabel(xField)} by ${getFieldLabel(yField)}`;
+        return $t('graphs.auto_title_by', { x: getFieldLabel(xField), y: getFieldLabel(yField) });
       case 'regression':
-        return `${getFieldLabel(xField)} vs ${getFieldLabel(yField)} (Trend)`;
+        return $t('graphs.auto_title_trend', { x: getFieldLabel(xField), y: getFieldLabel(yField) });
       case 'winrate-waffle':
-        return 'Win/Loss Distribution';
+        return $t('graphs.auto_title_waffle');
       case 'relic-table':
-        return 'Relic Performance (Avg Floor Reached)';
+        return $t('graphs.auto_title_relic_table');
       case 'card-table':
-        return 'Card Performance (Avg Floor Reached)';
+        return $t('graphs.auto_title_card_table');
       case 'density':
-        return `${getFieldLabel(xField)} vs ${getFieldLabel(yField)} Density`;
+        return $t('graphs.auto_title_density', { x: getFieldLabel(xField), y: getFieldLabel(yField) });
       default:
-        return `${getFieldLabel(xField)} vs ${getFieldLabel(yField)}`;
+        return $t('graphs.auto_title_vs', { x: getFieldLabel(xField), y: getFieldLabel(yField) });
     }
   });
 
@@ -61,8 +62,8 @@
           title,
           xField: 'floor_reached',
           yField: 'floor_reached',
-          xLabel: 'Floor',
-          yLabel: 'Survival %',
+          xLabel: $t('graphs.axis_floor'),
+          yLabel: $t('graphs.axis_survival_pct'),
           groupByCharacter,
         };
         break;
@@ -103,7 +104,7 @@
           xField,
           yField: xField,
           xLabel: getFieldLabel(xField),
-          yLabel: 'Count',
+          yLabel: $t('graphs.axis_count'),
           bins,
           showBossFloors: hasFloorOnX && showBossFloors,
         };
@@ -179,7 +180,7 @@
     type="button"
     class="modal-overlay"
     onclick={onClose}
-    aria-label="Close modal"
+    aria-label={$t('common.close_modal')}
   ></button>
   
   <!-- Modal content -->
@@ -199,7 +200,7 @@
       class:hover:text-slate-700={!$isDarkMode}
       class:hover:bg-slate-100={!$isDarkMode}
       onclick={onClose}
-      aria-label="Close modal"
+      aria-label={$t('common.close_modal')}
     >
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -207,14 +208,14 @@
     </button>
 
     <h2 class="text-xl font-semibold mb-4" class:text-slate-100={$isDarkMode} class:text-slate-800={!$isDarkMode}>
-      Add New Graph
+      {$t('graphs.add_graph_heading')}
     </h2>
 
     <form onsubmit={handleSubmit} class="space-y-4">
       <!-- Graph Type -->
       <div>
         <label for="graph-type" class="form-label mb-1" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
-          Graph Type
+          {$t('graphs.graph_type_label')}
         </label>
         <select
           id="graph-type"
@@ -227,15 +228,15 @@
           class:border-slate-300={!$isDarkMode}
           class:text-slate-800={!$isDarkMode}
         >
-          <option value="scatter">Scatter Plot</option>
-          <option value="histogram">Histogram</option>
-          <option value="survival">Survival Curve</option>
-          <option value="boxplot">Box Plot</option>
-          <option value="regression">Regression Plot</option>
-          <option value="density">Density Plot</option>
-          <option value="winrate-waffle">Win/Loss Waffle</option>
-          <option value="relic-table">Relic Table</option>
-          <option value="card-table">Card Table</option>
+          <option value="scatter">{$t('graphs.type_scatter')}</option>
+          <option value="histogram">{$t('graphs.type_histogram')}</option>
+          <option value="survival">{$t('graphs.type_survival')}</option>
+          <option value="boxplot">{$t('graphs.type_boxplot')}</option>
+          <option value="regression">{$t('graphs.type_regression')}</option>
+          <option value="density">{$t('graphs.type_density')}</option>
+          <option value="winrate-waffle">{$t('graphs.type_waffle')}</option>
+          <option value="relic-table">{$t('graphs.type_relic_table')}</option>
+          <option value="card-table">{$t('graphs.type_card_table')}</option>
         </select>
       </div>
 
@@ -249,7 +250,7 @@
             class="form-checkbox"
           />
           <label for="group-by-char" class="text-sm" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
-            Group by character
+            {$t('graphs.group_by_character')}
           </label>
         </div>
       {/if}
@@ -257,21 +258,21 @@
       <!-- Win/Loss waffle has no field options -->
       {#if graphType === 'winrate-waffle'}
         <p class="text-sm" class:text-slate-400={$isDarkMode} class:text-slate-500={!$isDarkMode}>
-          Shows win/loss ratio as a waffle chart. No additional configuration needed.
+          {$t('graphs.waffle_description')}
         </p>
       {/if}
 
       <!-- Relic table has no field options -->
       {#if graphType === 'relic-table'}
         <p class="text-sm" class:text-slate-400={$isDarkMode} class:text-slate-500={!$isDarkMode}>
-          Shows a sorted, scrollable table of relics with average floor reached. No additional configuration needed.
+          {$t('graphs.relic_table_description')}
         </p>
       {/if}
 
       <!-- Card table has no field options -->
       {#if graphType === 'card-table'}
         <p class="text-sm" class:text-slate-400={$isDarkMode} class:text-slate-500={!$isDarkMode}>
-          Shows a sorted, scrollable table of cards with average floor reached. No additional configuration needed.
+          {$t('graphs.card_table_description')}
         </p>
       {/if}
 
@@ -279,7 +280,7 @@
       {#if graphType !== 'survival' && graphType !== 'winrate-waffle' && graphType !== 'relic-table' && graphType !== 'card-table'}
       <div>
         <label for="x-field" class="form-label mb-1" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
-          {graphType === 'histogram' ? 'Value Field' : graphType === 'boxplot' ? 'Value Field' : 'X Axis Field'}
+          {graphType === 'histogram' ? $t('graphs.value_field') : graphType === 'boxplot' ? $t('graphs.value_field') : $t('graphs.x_axis_field')}
         </label>
         <select
           id="x-field"
@@ -302,7 +303,7 @@
       {#if graphType === 'scatter' || graphType === 'regression' || graphType === 'density' || graphType === 'boxplot'}
         <div>
           <label for="y-field" class="form-label mb-1" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
-            {graphType === 'boxplot' ? 'Group By Field' : 'Y Axis Field'}
+            {graphType === 'boxplot' ? $t('graphs.group_by_field') : $t('graphs.y_axis_field')}
           </label>
           <select
             id="y-field"
@@ -327,7 +328,7 @@
       {#if graphType === 'histogram'}
         <div>
           <label for="bins" class="form-label mb-1" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
-            Number of Bins
+            {$t('graphs.num_bins')}
           </label>
           <input
             id="bins"
@@ -356,7 +357,7 @@
             class="form-checkbox"
           />
           <label for="show-confidence" class="text-sm" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
-            Show 95% confidence interval
+            {$t('graphs.show_confidence')}
           </label>
         </div>
       {/if}
@@ -365,7 +366,7 @@
       {#if graphType === 'density'}
         <div>
           <label for="bandwidth" class="form-label mb-1" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
-            Bandwidth (smoothing)
+            {$t('graphs.bandwidth_label')}
           </label>
           <input
             id="bandwidth"
@@ -394,7 +395,7 @@
             class="form-checkbox"
           />
           <label for="show-boss-floors" class="text-sm" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
-            Show boss floor markers (Act 1, 2, 3, Heart)
+            {$t('graphs.show_boss_floors_full')}
           </label>
         </div>
       {/if}
@@ -402,7 +403,7 @@
       <!-- Custom Title (optional) -->
       <div>
         <label for="custom-title" class="form-label mb-1" class:text-slate-300={$isDarkMode} class:text-slate-700={!$isDarkMode}>
-          Custom Title (optional)
+          {$t('graphs.custom_title_label')}
         </label>
         <input
           id="custom-title"
@@ -427,7 +428,7 @@
           type="submit"
           class="btn btn-md btn-primary flex-1"
         >
-          Add Graph
+          {$t('graphs.add_graph_action')}
         </button>
         <button
           type="button"
@@ -440,7 +441,7 @@
           class:hover:bg-slate-300={!$isDarkMode}
           class:text-slate-700={!$isDarkMode}
         >
-          Cancel
+          {$t('common.cancel')}
         </button>
       </div>
     </form>

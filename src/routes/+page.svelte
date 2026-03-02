@@ -1,9 +1,9 @@
 <script lang="ts">
   import { Either } from 'effect';
   import Grid, { GridItem } from '@appulsauce/svelte-grid';
-  import { 
-    effectApi, 
-    runEffect, 
+  import {
+    effectApi,
+    runEffect,
     formatApiError,
     getCharacterColor,
     getCharacterDisplayName,
@@ -14,14 +14,15 @@
   import { BarChart } from '$lib/plots';
   import { isDarkMode } from '$lib/stores/theme';
   import { overviewGraphs, characterGraphs, type GraphConfig } from '$lib/stores/graphs';
-  import { 
-    invokeGetPathInfo, 
-    invokeSetPath, 
-    invokeClearPath, 
+  import {
+    invokeGetPathInfo,
+    invokeSetPath,
+    invokeClearPath,
     initializePathFromStorage,
-    type RunsPathInfo 
+    type RunsPathInfo
   } from '$lib/stores/settings';
   import { GraphCard, AddGraphModal, UpdateManager } from '$lib/components';
+  import { t, locale, setLocale, SUPPORTED_LOCALES, type Locale } from '$lib/i18n';
 
   // Grid settings
   const GRID_COLS = 2;
@@ -59,8 +60,8 @@
 
   // Derived state for current character's runs
   let characterRuns = $derived(
-    activeTab === 'overview' 
-      ? allRuns 
+    activeTab === 'overview'
+      ? allRuns
       : allRuns.filter(r => r.character === activeTab)
   );
 
@@ -151,13 +152,13 @@
   // Path settings handlers
   async function handleSavePath(): Promise<void> {
     if (!customPathInput.trim()) {
-      pathError = 'Please enter a path';
+      pathError = $t('settings.enter_path_error');
       return;
     }
-    
+
     isSavingPath = true;
     pathError = null;
-    
+
     try {
       pathInfo = await invokeSetPath(customPathInput.trim());
       // Reload data with new path
@@ -172,7 +173,7 @@
   async function handleClearPath(): Promise<void> {
     isSavingPath = true;
     pathError = null;
-    
+
     try {
       pathInfo = await invokeClearPath();
       customPathInput = pathInfo.auto_detected_path ?? '';
@@ -187,7 +188,7 @@
 </script>
 
 <svelte:head>
-  <title>STS Stat Viewer</title>
+  <title>{$t('dashboard.page_title')}</title>
 </svelte:head>
 
 <div class="container mx-auto px-4 py-6">
@@ -195,16 +196,16 @@
   <header class="mb-8 flex items-start justify-between">
     <div>
       <h1 class="text-3xl font-bold mb-2" class:text-slate-100={$isDarkMode} class:text-slate-800={!$isDarkMode}>
-        Slay the Spire Stats
+        {$t('dashboard.heading')}
       </h1>
       <p class:text-slate-400={$isDarkMode} class:text-slate-600={!$isDarkMode}>
-        Analyze your runs across all characters
+        {$t('dashboard.subtitle')}
       </p>
     </div>
     <div class="flex items-center gap-3">
       <!-- Update Manager -->
       <UpdateManager />
-      
+
       <!-- Settings button -->
       <button
         class="icon-btn icon-btn-md rounded-lg"
@@ -215,7 +216,7 @@
         class:hover:bg-slate-300={!$isDarkMode}
         class:text-slate-700={!$isDarkMode}
         onclick={() => showSettings = !showSettings}
-        title="Settings"
+        title={$t('settings.settings_tooltip')}
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
@@ -226,7 +227,7 @@
 
   <!-- Settings Panel -->
   {#if showSettings}
-    <div 
+    <div
       class="mb-6 p-4 rounded-lg border"
       class:bg-slate-800={$isDarkMode}
       class:border-slate-700={$isDarkMode}
@@ -234,29 +235,29 @@
       class:border-slate-300={!$isDarkMode}
     >
       <h3 class="text-lg font-semibold mb-4" class:text-slate-100={$isDarkMode} class:text-slate-800={!$isDarkMode}>
-        Settings
+        {$t('settings.heading')}
       </h3>
-      
+
       <div class="space-y-4">
         <div>
-          <label 
+          <label
             for="runs-path-input"
             class="form-label mb-2"
             class:text-slate-300={$isDarkMode}
             class:text-slate-700={!$isDarkMode}
           >
-            Runs Data Path
+            {$t('settings.runs_path_label')}
           </label>
           <p class="text-xs mb-2" class:text-slate-400={$isDarkMode} class:text-slate-500={!$isDarkMode}>
-            Manually specify the path to your Slay the Spire runs folder if auto-detection fails.
+            {$t('settings.runs_path_description')}
           </p>
-          
+
           <div class="flex gap-2">
             <input
               id="runs-path-input"
               type="text"
               bind:value={customPathInput}
-              placeholder="/path/to/SlayTheSpire/runs"
+              placeholder={$t('settings.runs_path_placeholder')}
               class="form-input flex-1"
               class:bg-slate-700={$isDarkMode}
               class:text-slate-100={$isDarkMode}
@@ -271,7 +272,7 @@
               onclick={handleSavePath}
               disabled={isSavingPath}
             >
-              {isSavingPath ? 'Saving...' : 'Save'}
+              {isSavingPath ? $t('common.saving') : $t('common.save')}
             </button>
             {#if pathInfo?.is_custom}
               <button
@@ -285,37 +286,70 @@
                 onclick={handleClearPath}
                 disabled={isSavingPath}
               >
-                Use Auto-Detect
+                {$t('settings.use_auto_detect')}
               </button>
             {/if}
           </div>
-          
+
           {#if pathError}
             <p class="mt-2 text-sm text-red-500">{pathError}</p>
           {/if}
-          
+
           <div class="mt-3 text-xs space-y-1" class:text-slate-400={$isDarkMode} class:text-slate-500={!$isDarkMode}>
             {#if pathInfo}
               <p>
-                <span class="font-medium">Status:</span>
+                <span class="font-medium">{$t('settings.status_label')}</span>
                 {#if pathInfo.path_exists}
-                  <span class="text-green-500">✓ Path valid</span>
+                  <span class="text-green-500">{$t('settings.path_valid')}</span>
                 {:else if pathInfo.current_path}
-                  <span class="text-red-500">✗ Path not found</span>
+                  <span class="text-red-500">{$t('settings.path_not_found')}</span>
                 {:else}
-                  <span class="text-yellow-500">⚠ No valid path</span>
+                  <span class="text-yellow-500">{$t('settings.no_valid_path')}</span>
                 {/if}
               </p>
               {#if pathInfo.is_custom}
-                <p><span class="font-medium">Mode:</span> Custom path</p>
+                <p><span class="font-medium">{$t('settings.mode_label')}</span> {$t('settings.mode_custom')}</p>
               {:else}
-                <p><span class="font-medium">Mode:</span> Auto-detected</p>
+                <p><span class="font-medium">{$t('settings.mode_label')}</span> {$t('settings.mode_auto')}</p>
               {/if}
               {#if pathInfo.auto_detected_path}
-                <p><span class="font-medium">Auto-detected:</span> {pathInfo.auto_detected_path}</p>
+                <p><span class="font-medium">{$t('settings.auto_detected_label')}</span> {pathInfo.auto_detected_path}</p>
               {/if}
             {/if}
           </div>
+        </div>
+
+        <!-- Language selector -->
+        <div>
+          <label
+            for="language-select"
+            class="form-label mb-2"
+            class:text-slate-300={$isDarkMode}
+            class:text-slate-700={!$isDarkMode}
+          >
+            {$t('settings.language_label')}
+          </label>
+          <p class="text-xs mb-2" class:text-slate-400={$isDarkMode} class:text-slate-500={!$isDarkMode}>
+            {$t('settings.language_description')}
+          </p>
+          <select
+            id="language-select"
+            value={$locale}
+            onchange={(e) => setLocale(e.currentTarget.value as Locale)}
+            class="form-input w-full max-w-xs"
+            class:bg-slate-700={$isDarkMode}
+            class:text-slate-100={$isDarkMode}
+            class:border-slate-600={$isDarkMode}
+            class:bg-white={!$isDarkMode}
+            class:text-slate-900={!$isDarkMode}
+            class:border-slate-300={!$isDarkMode}
+          >
+            {#each SUPPORTED_LOCALES as loc}
+              <option value={loc.code}>
+                {loc.name}{loc.status === 'ai_unverified' ? ` (${$t('settings.language_ai_badge')})` : ''}
+              </option>
+            {/each}
+          </select>
         </div>
       </div>
     </div>
@@ -328,7 +362,7 @@
       class:active={activeTab === 'overview'}
       onclick={() => activeTab = 'overview'}
     >
-      Overview
+      {$t('dashboard.overview_tab')}
     </button>
     {#each CHARACTERS as char}
       <button
@@ -345,17 +379,17 @@
   <!-- Loading State -->
   {#if isLoading}
     <div class="flex items-center justify-center h-64">
-      <div class="animate-pulse" class:text-slate-400={$isDarkMode} class:text-slate-600={!$isDarkMode}>Loading run data...</div>
+      <div class="animate-pulse" class:text-slate-400={$isDarkMode} class:text-slate-600={!$isDarkMode}>{$t('dashboard.loading_data')}</div>
     </div>
   {:else if error}
     <div class="bg-red-900/50 border border-red-700 rounded-lg p-4 text-red-200">
-      <p class="font-semibold">Error loading data</p>
+      <p class="font-semibold">{$t('dashboard.error_loading')}</p>
       <p class="text-sm">{error}</p>
-      <button 
+      <button
         class="mt-2 px-4 py-2 bg-red-700 hover:bg-red-600 rounded text-sm"
         onclick={loadData}
       >
-        Retry
+        {$t('common.retry')}
       </button>
     </div>
   {:else}
@@ -366,7 +400,7 @@
         <!-- Stats Cards -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
           {#each stats as stat}
-            <div 
+            <div
               class="stat-card"
               style:border-left-color={getCharacterColor(stat.character)}
             >
@@ -375,19 +409,19 @@
               </h3>
               <div class="grid grid-cols-2 gap-2 mt-2 text-sm">
                 <div>
-                  <span class="stat-label">Runs:</span>
+                  <span class="stat-label">{$t('dashboard.stat_runs')}</span>
                   <span class="ml-1 font-medium">{stat.total_runs}</span>
                 </div>
                 <div>
-                  <span class="stat-label">Wins:</span>
+                  <span class="stat-label">{$t('dashboard.stat_wins')}</span>
                   <span class="ml-1 font-medium text-green-500">{stat.wins}</span>
                 </div>
                 <div>
-                  <span class="stat-label">Win Rate:</span>
+                  <span class="stat-label">{$t('dashboard.stat_win_rate')}</span>
                   <span class="ml-1 font-medium">{(stat.win_rate * 100).toFixed(1)}%</span>
                 </div>
                 <div>
-                  <span class="stat-label">Avg Floor:</span>
+                  <span class="stat-label">{$t('dashboard.stat_avg_floor')}</span>
                   <span class="ml-1 font-medium">{(stat.avg_floor ?? 0).toFixed(1)}</span>
                 </div>
               </div>
@@ -398,7 +432,7 @@
         <!-- Overview Plots -->
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-lg font-semibold" class:text-slate-200={$isDarkMode} class:text-slate-700={!$isDarkMode}>
-            Graphs
+            {$t('dashboard.graphs_heading')}
           </h2>
           <div class="flex gap-2">
             <button
@@ -411,41 +445,41 @@
               class:text-slate-700={!$isDarkMode}
               onclick={resetGraphs}
             >
-              Reset to Defaults
+              {$t('dashboard.reset_defaults')}
             </button>
             <button
               class="btn btn-sm btn-primary"
               onclick={() => showAddModal = true}
             >
-              + Add Graph
+              {$t('dashboard.add_graph_btn')}
             </button>
           </div>
         </div>
         <!-- Static bar charts -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <div class="static-chart">
-            <BarChart 
+            <BarChart
               data={getWinRateData(stats)}
-              title="Win Rate by Character"
-              xLabel="Character"
-              yLabel="Win Rate (%)"
+              title={$t('graphs.default_win_rate_by_char')}
+              xLabel={$t('graphs.axis_character')}
+              yLabel={$t('graphs.axis_win_rate_pct')}
             />
           </div>
           <div class="static-chart">
-            <BarChart 
+            <BarChart
               data={getAvgFloorData(stats)}
-              title="Average Floor Reached"
-              xLabel="Character"
-              yLabel="Floor"
+              title={$t('graphs.default_avg_floor')}
+              xLabel={$t('graphs.axis_character')}
+              yLabel={$t('graphs.axis_floor')}
             />
           </div>
         </div>
         <hr class="static-divider" />
         <!-- Draggable custom graphs -->
-        <Grid 
-          cols={GRID_COLS} 
-          itemSize={GRID_ITEM_SIZE} 
-          gap={GRID_GAP} 
+        <Grid
+          cols={GRID_COLS}
+          itemSize={GRID_ITEM_SIZE}
+          gap={GRID_GAP}
           collision="push"
           class="overview-grid"
         >
@@ -463,10 +497,11 @@
               resizerClass="grid-card-resizer"
             >
               {#snippet moveHandle({ moveStart })}
-                <div 
+                <!-- svelte-ignore a11y_no_static_element_interactions -->
+                <div
                   class="drag-handle"
                   onpointerdown={moveStart}
-                  title="Drag to move"
+                  title={$t('graphs.drag_to_move')}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
@@ -494,12 +529,12 @@
       <div class="space-y-6">
         <!-- Character Header -->
         {#if charStats}
-          <div 
+          <div
             class="stat-card !border-l-4"
             style:border-left-color={getCharacterColor(activeTab)}
           >
             <div class="flex items-center justify-between">
-              <h2 
+              <h2
                 class="text-2xl font-bold"
                 style:color={getCharacterColor(activeTab)}
               >
@@ -507,17 +542,17 @@
               </h2>
               <div class="flex gap-6 text-sm">
                 <div>
-                  <span class="stat-label">Total Runs:</span>
+                  <span class="stat-label">{$t('dashboard.stat_total_runs')}</span>
                   <span class="ml-2 text-xl font-bold">{charStats.total_runs}</span>
                 </div>
                 <div>
-                  <span class="stat-label">Win Rate:</span>
+                  <span class="stat-label">{$t('dashboard.stat_win_rate')}</span>
                   <span class="ml-2 text-xl font-bold text-green-500">
                     {(charStats.win_rate * 100).toFixed(1)}%
                   </span>
                 </div>
                 <div>
-                  <span class="stat-label">Max Floor:</span>
+                  <span class="stat-label">{$t('dashboard.stat_max_floor')}</span>
                   <span class="ml-2 text-xl font-bold">{charStats.max_floor}</span>
                 </div>
               </div>
@@ -528,7 +563,7 @@
         <!-- Character Plots -->
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-lg font-semibold" class:text-slate-200={$isDarkMode} class:text-slate-700={!$isDarkMode}>
-            Graphs
+            {$t('dashboard.graphs_heading')}
           </h2>
           <div class="flex gap-2">
             <button
@@ -541,20 +576,20 @@
               class:text-slate-700={!$isDarkMode}
               onclick={resetGraphs}
             >
-              Reset to Defaults
+              {$t('dashboard.reset_defaults')}
             </button>
             <button
               class="btn btn-sm btn-primary"
               onclick={() => showAddModal = true}
             >
-              + Add Graph
+              {$t('dashboard.add_graph_btn')}
             </button>
           </div>
         </div>
-        <Grid 
-          cols={GRID_COLS} 
-          itemSize={GRID_ITEM_SIZE} 
-          gap={GRID_GAP} 
+        <Grid
+          cols={GRID_COLS}
+          itemSize={GRID_ITEM_SIZE}
+          gap={GRID_GAP}
           collision="push"
           class="character-grid"
         >
@@ -572,10 +607,11 @@
               resizerClass="grid-card-resizer"
             >
               {#snippet moveHandle({ moveStart })}
-                <div 
+                <!-- svelte-ignore a11y_no_static_element_interactions -->
+                <div
                   class="drag-handle"
                   onpointerdown={moveStart}
-                  title="Drag to move"
+                  title={$t('graphs.drag_to_move')}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />

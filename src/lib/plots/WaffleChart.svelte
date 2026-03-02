@@ -4,6 +4,7 @@
   import type { PlotOptions } from './types';
   import { isDarkMode } from '$lib/stores/theme';
   import { createDebouncedResizeObserver, calculatePlotDimensions, calculateTickCount } from '$lib/utils';
+  import { t } from '$lib/i18n';
 
   export interface WaffleData {
     category: string;
@@ -127,7 +128,7 @@
   {#if data.length > 0}
     {@const total = data.reduce((sum, d) => sum + d.value, 0)}
     <div class="summary-stats">
-      <p>Each square = {unit} run{unit > 1 ? 's' : ''} · Total: {total} runs</p>
+      <p>{$t('graphs.waffle_summary', { unit, unitLabel: unit > 1 ? $t('game_terms.runs') : $t('game_terms.run'), total })}</p>
       <div class="stats-row">
         {#each data as d}
           <span>

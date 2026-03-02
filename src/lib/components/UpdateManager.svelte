@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { isDarkMode } from '$lib/stores/theme';
+  import { t } from '$lib/i18n';
 
   interface Release {
     tag_name: string;
@@ -12,15 +13,14 @@
   let currentVersion = $state('0.1.0');
   let latestVersion = $state<string | null>(null);
   let availableVersions = $state<Release[]>([]);
-  let selectedVersion = $state<string | null>(null);
   let isChecking = $state(false);
   let isUpdating = $state(false);
   let updateProgress = $state(0);
   let updateStatus = $state<string | null>(null);
   let error = $state<string | null>(null);
   let showDropdown = $state(false);
-  let dropdownEl: HTMLDivElement | null = null;
-  let dropdownButtonEl: HTMLButtonElement | null = null;
+  let dropdownEl = $state<HTMLDivElement | null>(null);
+  let dropdownButtonEl = $state<HTMLButtonElement | null>(null);
 
   // Check if running in Tauri
   let isTauri = $state(false);
@@ -66,7 +66,7 @@
     
     isChecking = true;
     error = null;
-    updateStatus = 'Checking for updates...';
+    updateStatus = $t('update_manager.checking');
 
     try {
       const { check } = await import('@tauri-apps/plugin-updater');
@@ -74,12 +74,12 @@
       
       if (update) {
         latestVersion = update.version;
-        updateStatus = `Update available: v${update.version}`;
+        updateStatus = $t('update_manager.available', { version: update.version });
       } else {
-        updateStatus = 'You are on the latest version';
+        updateStatus = $t('update_manager.latest');
       }
     } catch (e) {
-      error = `Failed to check for updates: ${e}`;
+      error = $t('update_manager.check_failed', { error: String(e) });
       updateStatus = null;
     } finally {
       isChecking = false;
@@ -100,31 +100,31 @@
       const update = await check();
       
       if (update) {
-        updateStatus = 'Downloading update...';
+        updateStatus = $t('update_manager.downloading');
         
         await update.downloadAndInstall((event) => {
           switch (event.event) {
             case 'Started':
-              updateStatus = `Downloading (0%)...`;
+              updateStatus = $t('update_manager.downloading_progress', { progress: 0 });
               break;
             case 'Progress':
               if ('contentLength' in event.data && event.data.contentLength) {
-                const progress = Math.round((event.data.chunkLength / event.data.contentLength) * 100);
+                const progress = Math.round((event.data.chunkLength / Number(event.data.contentLength)) * 100);
                 updateProgress = Math.min(updateProgress + progress, 100);
-                updateStatus = `Downloading (${updateProgress}%)...`;
+                updateStatus = $t('update_manager.downloading_progress', { progress: updateProgress });
               }
               break;
             case 'Finished':
-              updateStatus = 'Download complete, installing...';
+              updateStatus = $t('update_manager.download_complete');
               break;
           }
         });
 
-        updateStatus = 'Update installed! Restarting...';
+        updateStatus = $t('update_manager.installed');
         await relaunch();
       }
     } catch (e) {
-      error = `Update failed: ${e}`;
+      error = $t('update_manager.update_failed', { error: String(e) });
       updateStatus = null;
     } finally {
       isUpdating = false;
@@ -144,7 +144,7 @@
       } catch (e) {
         console.error('Failed to open release page:', e);
         // Fallback: copy URL to clipboard or show it
-        error = `Could not open browser. Visit: ${release.html_url}`;
+        error = $t('update_manager.browser_error', { url: release.html_url });
       }
     }
     showDropdown = false;
@@ -190,7 +190,7 @@
       class:hover:bg-slate-300={!hasUpdate && !$isDarkMode}
       onclick={hasUpdate ? installUpdate : checkForUpdates}
       disabled={isChecking || isUpdating}
-      title={hasUpdate ? `Update to v${latestVersion}` : 'Check for updates'}
+      title={hasUpdate ? $t('update_manager.update_to_tooltip', { version: latestVersion ?? '' }) : $t('update_manager.check_tooltip')}
     >
       {#if isChecking || isUpdating}
         <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -215,7 +215,7 @@
         class:bg-slate-200={!$isDarkMode}
         class:hover:bg-slate-300={!$isDarkMode}
         onclick={toggleDropdown}
-        title="Downgrade to older version"
+        title={$t('update_manager.downgrade_tooltip')}
       >
         <!-- Down arrow icon -->
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -233,7 +233,7 @@
           class:border-slate-200={!$isDarkMode}
         >
           <div class="dropdown-header" class:text-slate-400={$isDarkMode} class:text-slate-500={!$isDarkMode}>
-            Select version to download
+            {$t('update_manager.select_version')}
           </div>
           {#each availableVersions as release}
             <button
@@ -246,12 +246,12 @@
             >
               {release.tag_name}
               {#if release.tag_name.replace(/^v/, '') === currentVersion}
-                <span class="text-xs opacity-50">(current)</span>
+                <span class="text-xs opacity-50">{$t('update_manager.current_marker')}</span>
               {/if}
             </button>
           {/each}
           {#if availableVersions.length === 0}
-            <div class="dropdown-item opacity-50">Loading...</div>
+            <div class="dropdown-item opacity-50">{$t('common.loading')}</div>
           {/if}
         </div>
       {/if}

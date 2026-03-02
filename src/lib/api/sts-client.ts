@@ -10,7 +10,9 @@
 import createClient, { type Middleware } from 'openapi-fetch';
 import { Effect, Either } from 'effect';
 import { match } from 'ts-pattern';
+import { get } from 'svelte/store';
 import type { paths, components } from './schema';
+import { t } from '$lib/i18n';
 
 // ============================================================================
 // Type Exports from Generated Schema
@@ -248,10 +250,11 @@ export async function runEffect<A, E>(
  * Format API error for display
  */
 export function formatApiError(error: ApiClientError): string {
+  const tr = get(t);
   return match(error)
-    .with({ _tag: 'NetworkError' }, (e) => `Network error: ${e.message}`)
-    .with({ _tag: 'ApiRequestError' }, (e) => `API error: ${e.error.error}`)
-    .with({ _tag: 'UnexpectedError' }, (e) => `Unexpected error: ${e.message}`)
+    .with({ _tag: 'NetworkError' }, (e) => tr('errors.network', { message: e.message }))
+    .with({ _tag: 'ApiRequestError' }, (e) => tr('errors.api', { message: e.error.error }))
+    .with({ _tag: 'UnexpectedError' }, (e) => tr('errors.unexpected', { message: e.message }))
     .exhaustive();
 }
 
@@ -271,10 +274,11 @@ export function getCharacterColor(character: string): string {
  * Get character display name
  */
 export function getCharacterDisplayName(character: string): string {
+  const tr = get(t);
   return match(character.toUpperCase())
-    .with('IRONCLAD', () => 'Ironclad')
-    .with('THE_SILENT', () => 'Silent')
-    .with('DEFECT', () => 'Defect')
-    .with('WATCHER', () => 'Watcher')
+    .with('IRONCLAD', () => tr('game_terms.ironclad'))
+    .with('THE_SILENT', () => tr('game_terms.silent'))
+    .with('DEFECT', () => tr('game_terms.defect'))
+    .with('WATCHER', () => tr('game_terms.watcher'))
     .otherwise(() => character);
 }

@@ -1,0 +1,81 @@
+name: Translation Correction
+description: Report an incorrect, misleading, or missing translation
+title: "[i18n] "
+labels: ["i18n", "translation"]
+body:
+  - type: dropdown
+    id: locale
+    attributes:
+      label: Language / Locale
+      description: Which language has the issue?
+      options:
+        - German (de)
+        - French (fr)
+        - Spanish (es)
+        - Italian (it)
+        - Japanese (ja)
+        - Korean (ko)
+        - Chinese Simplified (zh-Hans)
+        - Chinese Traditional (zh-Hant)
+        - Portuguese Brazilian (pt-BR)
+        - Russian (ru)
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How impactful is this translation issue?
+      options:
+        - Minor (awkward phrasing but understandable)
+        - Moderate (confusing or misleading)
+        - Major (incorrect meaning or broken UI)
+        - Critical (game term mistranslated, data misrepresented)
+    validations:
+      required: true
+
+  - type: textarea
+    id: current
+    attributes:
+      label: Current translation
+      description: What does the text currently say?
+      placeholder: "e.g. The button says 'Speicher' instead of 'Speichern'"
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Suggested correction
+      description: What should it say instead?
+      placeholder: "e.g. It should say 'Speichern' (the verb form)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Where in the app?
+      description: Which screen, button, label, or section has this text?
+      placeholder: "e.g. Settings panel, language dropdown label"
+    validations:
+      required: false
+
+  - type: input
+    id: translation_key
+    attributes:
+      label: Translation key (if known)
+      description: "The i18n key, e.g. `settings.save_button`. Leave blank if unknown."
+      placeholder: "e.g. common.save"
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: sla
+    attributes:
+      label: Additional context
+      options:
+        - label: This involves an official Slay the Spire game term (card, relic, character name)
+        - label: I am a native speaker of this language

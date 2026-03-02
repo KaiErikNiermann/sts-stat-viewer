@@ -2,9 +2,10 @@
   import '../app.css';
   import { onMount } from 'svelte';
   import { isDarkMode } from '$lib/stores/theme';
-  
+  import { t } from '$lib/i18n';
+
   let { children } = $props();
-  
+
   onMount(() => {
     isDarkMode.initialize();
   });
@@ -23,7 +24,7 @@
     class:border-slate-300={!$isDarkMode}
     class:text-slate-700={!$isDarkMode}
     class:hover:bg-slate-100={!$isDarkMode}
-    aria-label={$isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+    aria-label={$isDarkMode ? $t('settings.switch_to_light') : $t('settings.switch_to_dark')}
   >
     {#if $isDarkMode}
       <!-- Sun icon -->
@@ -37,6 +38,6 @@
       </svg>
     {/if}
   </button>
-  
+
   {@render children()}
 </div>

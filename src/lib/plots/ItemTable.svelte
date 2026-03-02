@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { isDarkMode } from '$lib/stores/theme';
   import { createDebouncedResizeObserver } from '$lib/utils';
+  import { t } from '$lib/i18n';
 
   export type ItemTableMode = 'relics' | 'cards';
 
@@ -59,8 +60,8 @@
   }
 
   // Dynamic labels based on mode
-  let itemLabel = $derived(mode === 'cards' ? 'Card' : 'Relic');
-  let emptyMessage = $derived(mode === 'cards' ? 'No card data available' : 'No relic data available');
+  let itemLabel = $derived(mode === 'cards' ? $t('graphs.item_card') : $t('graphs.item_relic'));
+  let emptyMessage = $derived(mode === 'cards' ? $t('graphs.no_card_data') : $t('graphs.no_relic_data'));
 
   // Calculate available height for table (subtract title and padding)
   let tableHeight = $derived(Math.max(100, containerHeight - (title ? 52 : 16)));
@@ -85,7 +86,8 @@
     <h3 class="plot-title mb-2">{title}</h3>
   {/if}
   
-  <div 
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div
     class="table-container overflow-auto rounded-lg border"
     class:border-slate-700={$isDarkMode}
     class:border-slate-300={!$isDarkMode}
@@ -112,7 +114,7 @@
             class:text-slate-700={!$isDarkMode}
             onclick={() => toggleSort('avgFloor')}
           >
-            Avg Floor {getSortIcon('avgFloor')}
+            {$t('graphs.item_avg_floor')} {getSortIcon('avgFloor')}
           </th>
           <th 
             class="text-right px-4 py-3 font-semibold cursor-pointer select-none hover:text-blue-400 transition-colors"
@@ -120,7 +122,7 @@
             class:text-slate-700={!$isDarkMode}
             onclick={() => toggleSort('count')}
           >
-            Runs {getSortIcon('count')}
+            {$t('graphs.item_runs')} {getSortIcon('count')}
           </th>
         </tr>
       </thead>
